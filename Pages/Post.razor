@@ -8,6 +8,10 @@
 </div>
 
 <h4>Add Params</h4>
+@if (ExistingKey)
+{
+    <p class="text-danger">Error: Param with that key exists. Would you like to <span class="text-primary" @onclick="ConfirmUpdate">update</span> it? <span @onclick="ClearError">x</span></p>
+}
 
 <table class="table mt-3">
     <tr>
@@ -20,13 +24,25 @@
         <tr>
             <td>@keyValue.Key</td>
             <td>@keyValue.Value</td>
-            <th><button class="btn btn-primary" @onclick="() => DeleteParam(keyValue.Key)">Delete Param</button></th>
+            <th>
+                <button class="btn btn-primary" @onclick="() => DeleteParam(keyValue.Key)">Delete</button>
+                <button class="btn btn-primary" @onclick="() => EditParam(keyValue.Key)">Edit</button>
+            </th>
         </tr>
     }
     <tr>
         <td><input class="form-control" id="new-key" type="text" @bind="NewKey" /></td>
         <td><input class="form-control" id="new-val" type="text" @bind="NewValue" /></td>
-        <td><button class="btn btn-primary" @onclick="AddParam">Add New Param</button></td>
+        <td>
+            @if (Editing)
+            {
+                <button class="btn btn-primary" @onclick="UpdateParam">Update</button>
+            }
+            else
+            {
+                <button class="btn btn-primary" @onclick="AddParam">Add New</button>
+            }
+        </td>
     </tr>
 </table>
 
@@ -38,21 +54,61 @@
 @code {
     private string Url { get; set; } = "https://localhost:44384/post";
 
-    private string NewKey { get; set; }
-
-    private string NewValue { get; set; }
-
     private Dictionary<string, string> Params = new() { ["test key"] = "this is a test val" };
+
+    private string NewKey { get; set; }
+    private string NewValue { get; set; }
+    private bool ExistingKey = false;
+
+    private bool Editing = false;
 
     private void AddParam()
     {
-        Params.Add(NewKey, NewValue);
-        ClearParamInputs();
+        var success = Params.TryAdd(NewKey, NewValue);
+
+        if (success)
+        {
+            ClearParamInputs();
+        }
+        else
+        {
+            ShowError();
+        }
     }
 
     private void DeleteParam(string key)
     {
         Params.Remove(key);
+    }
+
+    private void EditParam(string key)
+    {
+        NewKey = key;
+        NewValue = Params[key];
+        Editing = true;
+    }
+
+    private void UpdateParam()
+    {
+        Params[NewKey] = NewValue;
+        Editing = false;
+    }
+
+    private void ConfirmUpdate()
+    {
+        UpdateParam();
+        ClearError();
+    }
+
+    private void ShowError()
+    {
+        ExistingKey = true;
+    }
+
+    private void ClearError()
+    {
+        ExistingKey = false;
+        ClearParamInputs();
     }
 
     private void ClearParamInputs()
