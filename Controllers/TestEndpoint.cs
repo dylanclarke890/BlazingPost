@@ -6,10 +6,28 @@ namespace BlazingPostMan.Controllers
     [ApiController]
     public class TestEndpointController : ControllerBase
     {
+        [HttpPost]
+        public IActionResult Post()
+        {
+            return Ok("testing post");
+        }
+
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok("test");
+            return Ok("testing get");
+        }
+
+        [HttpPut]
+        public IActionResult Put()
+        {
+            return Ok("testing put");
+        }
+
+        [HttpDelete]
+        public IActionResult Delete()
+        {
+            return Ok("testing delete");
         }
     }
 }
