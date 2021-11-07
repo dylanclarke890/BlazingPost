@@ -1,0 +1,83 @@
+﻿@page "/post"
+
+<h3>Post</h3>
+
+<div class="form-group">
+    <label for="url-input">Enter a URL: </label>
+    <input class="form-control" id="url-input" type="text" @bind="Url" />
+</div>
+
+<h4>Add Params</h4>
+
+<table class="table mt-3">
+    <tr>
+        <th>Key</th>
+        <th>Value</th>
+        <th>Action</th>
+    </tr>
+    @foreach (var keyValue in Params)
+    {
+        <tr>
+            <td>@keyValue.Key</td>
+            <td>@keyValue.Value</td>
+            <th><button class="btn btn-primary" @onclick="() => DeleteParam(keyValue.Key)">Delete Param</button></th>
+        </tr>
+    }
+    <tr>
+        <td><input class="form-control" id="new-key" type="text" @bind="NewKey" /></td>
+        <td><input class="form-control" id="new-val" type="text" @bind="NewValue" /></td>
+        <td><button class="btn btn-primary" @onclick="AddParam">Add New Param</button></td>
+    </tr>
+</table>
+
+<div class="mt-3">
+    <h4>Preview: </h4>
+    <p>@GetUrlPreview()</p>
+</div>
+
+@code {
+    private string Url { get; set; } = "https://localhost:44384/post";
+
+    private string NewKey { get; set; }
+
+    private string NewValue { get; set; }
+
+    private Dictionary<string, string> Params = new() { ["test key"] = "this is a test val" };
+
+    private void AddParam()
+    {
+        Params.Add(NewKey, NewValue);
+        ClearParamInputs();
+    }
+
+    private void DeleteParam(string key)
+    {
+        Params.Remove(key);
+    }
+
+    private void ClearParamInputs()
+    {
+        NewKey = string.Empty;
+        NewValue = string.Empty;
+    }
+
+    private string GetUrlPreview()
+    {
+        // TODO: Refactor (string builder).
+
+        string url = "";
+        url += Url;
+        if (Params.Any())
+        {
+            url += "?";
+            foreach (var keyValue in Params)
+            {
+                url += $"{keyValue.Key}={keyValue.Value}&";
+            }
+
+            // Remove extra '&'
+            url = url.Substring(0, url.Length - 1);
+        }
+        return url;
+    }
+}
