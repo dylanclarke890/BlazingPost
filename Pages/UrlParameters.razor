@@ -81,6 +81,7 @@
         {
             await OnParamAction.InvokeAsync();
             ClearParamInputs();
+            ClearError();
         }
         else
         {
@@ -90,8 +91,8 @@
 
     private async Task DeleteParam(string key)
     {
-        await OnParamAction.InvokeAsync();
         Params.Remove(key);
+        await OnParamAction.InvokeAsync();
     }
 
     private void EditParam(string key)
@@ -109,9 +110,9 @@
             return;
         }
 
-        await OnParamAction.InvokeAsync();
         Params[NewKey] = NewValue;
         Editing = false;
+        await OnParamAction.InvokeAsync();
     }
 
     private async Task ConfirmParamUpdate()
