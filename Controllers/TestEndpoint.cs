@@ -9,7 +9,6 @@ namespace BlazingPostMan.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            System.Console.WriteLine("erm");
             return Ok("test");
         }
     }
