@@ -1,10 +1,9 @@
 ﻿@page "/post"
-
 <!--
 TODO:
-    1. Add validation for empty values as no point in sending them.
-    2. Change ExistingKey to generic error checker.
-    3. Add error enums.
+    1. Add validation for empty values as no point in adding them. DONE!
+    2. Change ExistingKey to generic error checker. DONE!
+    3. Add error enums. DONE! 
     4. Continue with BlazingPostMan.
     5. Update error UI (low priority).
 -->
@@ -17,9 +16,24 @@ TODO:
 </div>
 
 <h4>Add Params</h4>
-@if (ExistingKey)
+@if (Error)
 {
-    <p class="text-danger">Error: Param with that key exists. Would you like to <span class="text-primary hand" @onclick="ConfirmUpdate">update</span> it?<span class="text-dark hand" @onclick="ClearError"> X</span></p>
+    switch (ErrorType)
+    {
+        case ErrorTypes.ExistingParamKey:
+            {
+                <p class="text-danger">Error: Param with that key exists. Would you like to <span class="text-primary hand" @onclick="ConfirmParamUpdate">update</span> it?<span class="text-dark hand" @onclick="ClearError"> X</span></p>
+                break;
+            }
+        case ErrorTypes.EmptyParamValue:
+            {
+                <p class="text-danger">Error: Param value cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
+                break;
+            }
+        default:
+            break;
+    }
+
 }
 
 <table class="table mt-3">
@@ -67,12 +81,20 @@ TODO:
 
     private string NewKey { get; set; }
     private string NewValue { get; set; }
-    private bool ExistingKey = false;
+
+    private bool Error = false;
+    private ErrorTypes ErrorType;
 
     private bool Editing = false;
 
     private void AddParam()
     {
+        if (string.IsNullOrEmpty(NewValue))
+        {
+            ShowError(ErrorTypes.EmptyParamValue);
+            return;
+        }
+
         var success = Params.TryAdd(NewKey, NewValue);
 
         if (success)
@@ -81,7 +103,7 @@ TODO:
         }
         else
         {
-            ShowError();
+            ShowError(ErrorTypes.ExistingParamKey);
         }
     }
 
@@ -103,21 +125,23 @@ TODO:
         Editing = false;
     }
 
-    private void ConfirmUpdate()
+    private void ConfirmParamUpdate()
     {
         UpdateParam();
         ClearError();
+        ClearParamInputs();
     }
 
-    private void ShowError()
+    private void ShowError(ErrorTypes errorType)
     {
-        ExistingKey = true;
+        Error = true;
+        ErrorType = errorType;
     }
 
     private void ClearError()
     {
-        ExistingKey = false;
-        ClearParamInputs();
+        Error = false;
+        ErrorType = ErrorTypes.NotSpecified;
     }
 
     private void ClearParamInputs()
