@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31605.320
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazingPostMan", "BlazingPostMan.csproj", "{F078A3E9-840E-4DDA-B485-8D0F986B71BB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F078A3E9-840E-4DDA-B485-8D0F986B71BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F078A3E9-840E-4DDA-B485-8D0F986B71BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F078A3E9-840E-4DDA-B485-8D0F986B71BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F078A3E9-840E-4DDA-B485-8D0F986B71BB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A8A3CBB0-D7B8-488A-8D96-50DAD7E5320F}
+	EndGlobalSection
+EndGlobal
