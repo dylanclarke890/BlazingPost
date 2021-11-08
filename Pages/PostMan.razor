@@ -14,51 +14,58 @@ TODO:
     <input class="col-10 form-control" id="url-input" type="text" @bind="Url" />
 </div>
 
-<label>Request Type: </label>
-<select @bind="requestType">
-    <option value="@RequestType.POST">@RequestType.POST</option>
-    <option value="@RequestType.GET">@RequestType.GET</option>
-    <option value="@RequestType.PUT">@RequestType.PUT</option>
-    <option value="@RequestType.DELETE">@RequestType.DELETE</option>
-</select>
-
-<div class="mt-3">
-    <h4>Preview: </h4>
-    <p>@requestType @UrlHelper.GetUrl(Url, Params)</p>
+<div class="form-group">
+    <label>Request Type: </label>
+    <select @bind="requestType">
+        <option value="@RequestType.POST">@RequestType.POST</option>
+        <option value="@RequestType.GET">@RequestType.GET</option>
+        <option value="@RequestType.PUT">@RequestType.PUT</option>
+        <option value="@RequestType.DELETE">@RequestType.DELETE</option>
+    </select>
 </div>
 
-<button class="btn btn-primary" @onclick="SendRequest" disabled="@Sending">Send</button>
+<div class="mt-3 mb-3">
+    <h3>Preview: </h3> <span>@requestType @UrlHelper.GetUrl(Url, Params)</span><br />
+</div>
 
-<h3>Result:</h3>
-<div>
-    @requestResult
+<button class="btn btn-primary" @onclick="SendRequest" disabled="@sending">Send</button>
+
+<div class="mt-3 mb-3">
+    <h3>Result:</h3>
+    <div>@requestResult</div>
 </div>
 
 <TabSet>
     <TabChild Title="Params">
-        <UrlParameters Params="Params" OnParamAction="() => { StateHasChanged(); }" />
+        <UrlParameters Params="Params" OnParamAction="StateHasChanged" />
     </TabChild>
     <TabChild Title="Body">
-        <p>Body</p>
+        <BodyContent OnBodyUpdated="(b) => RequestBody = b"/>
     </TabChild>
 </TabSet>
 
 @code {
     private string Url { get; set; } = "https://localhost:44384/api/testendpoint";
-
-    private bool Sending = false;
-
-    private string requestResult;
     private RequestType requestType { get; set; }
 
     private Dictionary<string, string> Params = new() { ["test key"] = "this is a test val" };
+    private Body RequestBody;
+
+    private string requestResult;
+
+    private bool sending = false;
 
     private async Task SendRequest()
     {
-        Sending = true;
-        var result = await requestProcessor.ProcessRequest(UrlHelper.GetUrl(Url, Params), requestType);
+        if (RequestBody?.BodyType == BodyType.String)
+        {
+
+        }
+
+        sending = true;
+        var result = await requestProcessor.ProcessRequest(new(Url, requestType, Params, RequestBody));
         requestResult = await result.Content.ReadAsStringAsync();
-        Sending = false;
+        sending = false;
     }
 }
 

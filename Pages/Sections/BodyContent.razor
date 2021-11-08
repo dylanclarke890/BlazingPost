@@ -1,0 +1,33 @@
+﻿<h3>Body</h3>
+
+<EditForm Model="model">
+    <InputRadioGroup @bind-Value="model.BodyType">
+        @foreach (var option in Enum.GetValues<BodyType>())
+        {
+            <InputRadio Value="option" @onclick="async () => { model.BodyType = option; await NotifyParentOfChange(); }"/> @option <br />
+        }
+    </InputRadioGroup>
+
+    @if (model.BodyType == BodyType.String)
+    {
+        <label>String Content:</label>
+        <InputTextArea @bind-Value="model.StringContent" @onblur="NotifyParentOfChange"/>
+    }
+</EditForm>
+
+@code {
+    private Body model = new();
+
+    [Parameter]
+    public EventCallback<Body> OnBodyUpdated { get; set; }
+
+    private async Task UpdateBodyType()
+    {
+        await NotifyParentOfChange();
+    }
+
+    private async Task NotifyParentOfChange()
+    {
+        await OnBodyUpdated.InvokeAsync(model);
+    }
+}
