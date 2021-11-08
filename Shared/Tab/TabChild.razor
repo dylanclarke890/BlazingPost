@@ -1,0 +1,43 @@
+﻿@using BlazingPostMan.Data.UIInterfaces;
+@implements ITab
+
+<li>
+    <a @onclick="ActivateTab" class=" @(!IsTabActive ? NotActiveCssClass : null)   custom-tab nav-link @TitleCssClass" role="button">
+        @Title
+    </a>
+</li>
+
+@code {
+    [CascadingParameter]
+    public TabSet ContainerTabSet { get; set; }
+    [Parameter]
+    public string Title { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private string TitleCssClass => ContainerTabSet.ActiveTab.Equals(this) ? "active active-tab-background" : null;
+    private string NotActiveCssClass { get; set; } = "not-active-tab-background";
+    private bool IsTabActive => ContainerTabSet.ActiveTab.Equals(this);
+    protected override void OnInitialized()
+    {
+        ContainerTabSet.AddTab(this);
+    }
+    private void ActivateTab()
+    {
+        ContainerTabSet.SetActiveTab(this);
+    }
+}
+
+<style>
+    .custom-tab {
+        cursor: pointer;
+    }
+
+    .active-tab-background {
+        background-color: rgba(4,213,255,0.1);
+    }
+
+    .not-active-tab-background {
+        background-color: rgba(4,213,255,0.1);
+    }
+</style>
