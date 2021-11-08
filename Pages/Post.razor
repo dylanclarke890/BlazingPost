@@ -9,9 +9,9 @@ TODO:
 
 <h3>BlazingPostMan</h3>
 
-<div class="form-group">
-    <label for="url-input">Enter a URL: </label>
-    <input class="form-control" id="url-input" type="text" @bind="Url" />
+<div class="form-group row">
+    <label class="col-2 col-form-label" for="url-input">Enter a URL: </label>
+    <input class="col-10 form-control" id="url-input" type="text" @bind="Url" />
 </div>
 
 <label>Request Type: </label>
@@ -24,7 +24,7 @@ TODO:
 
 <div class="mt-3">
     <h4>Preview: </h4>
-    <p>@requestType: @UrlHelper.GetUrl(Url, Params)</p>
+    <p>@requestType @UrlHelper.GetUrl(Url, Params)</p>
 </div>
 
 <button class="btn btn-primary" @onclick="SendRequest" disabled="@Sending">Send</button>
