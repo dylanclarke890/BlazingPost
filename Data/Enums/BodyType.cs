@@ -2,6 +2,6 @@
 {
     public enum BodyType
     {
-        None = 0, String = 1
+        None = 0, String = 1, File = 2
     }
 }

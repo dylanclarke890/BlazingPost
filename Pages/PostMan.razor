@@ -3,8 +3,7 @@
 @inject IRequestProcessor requestProcessor
 <!--
 TODO:
-    1. Ability to add content to PUT or POST requests (body of request).
-    2. Update error UI (low priority).
+    1. Update error UI (low priority).
 -->
 
 <h3>BlazingPostMan</h3>
@@ -57,15 +56,15 @@ TODO:
 
     private async Task SendRequest()
     {
-        if (RequestBody?.BodyType == BodyType.String)
-        {
-
-        }
-
         sending = true;
         var result = await requestProcessor.ProcessRequest(new(Url, requestType, Params, RequestBody));
-        requestResult = await result.Content.ReadAsStringAsync();
+        await HandleContent(result);
         sending = false;
+    }
+
+    private async Task HandleContent(HttpResponseMessage response)
+    {
+        requestResult = await response.Content.ReadAsStringAsync();
     }
 }
 

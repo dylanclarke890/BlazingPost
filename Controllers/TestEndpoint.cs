@@ -1,5 +1,7 @@
 ﻿using BlazingPostMan.Data.Enums;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Linq;
 
 namespace BlazingPostMan.Controllers
 {
@@ -10,7 +12,20 @@ namespace BlazingPostMan.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] string content)
         {
+            if (!StringContentRequest())
+            {
+                if (Request.Form.Files.Any())
+                {
+                    content += $", {Request.Form.Files.Count} Files";
+                }
+            }
+
             return OkWithBody(content, RequestType.POST);
+        }
+
+        private bool StringContentRequest()
+        {
+            return Request.ContentType == "application/json; charset=utf-8";
         }
 
         [HttpGet]

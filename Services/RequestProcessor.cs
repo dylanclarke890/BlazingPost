@@ -1,8 +1,12 @@
 ﻿using BlazingPostMan.Data.Enums;
 using BlazingPostMan.Data.Helpers;
 using BlazingPostMan.Data.Models;
+using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -35,6 +39,11 @@ namespace BlazingPostMan.Services
             HttpRequestMessage httpRequest = new(HttpMethod.Post, url);
             httpRequest.Content = GetContent(body);
 
+            if (body.BodyType == BodyType.File)
+            {
+                httpRequest.Content.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+            }
+
             return await _httpClient.SendAsync(httpRequest);
         }
 
@@ -64,9 +73,35 @@ namespace BlazingPostMan.Services
 
         private static HttpContent GetContent(Body body)
         {
-            body ??= new() { StringContent = "" };
-            return new StringContent(JsonConvert.SerializeObject(body.StringContent), Encoding.UTF8, "application/json");
+            body ??= new() 
+            { 
+                StringContent = "",
+                BodyType = BodyType.String
+            };
+
+            if (body.BodyType is BodyType.String or BodyType.None)
+            {
+                return new StringContent(JsonConvert.SerializeObject(body.StringContent), Encoding.UTF8, "application/json");
+            }
+            else if (body.BodyType is BodyType.File)
+            {
+                if (body.FileContent is null)
+                {
+                    return null;
+                }
+                
+                return body.FileContent.Count > 1 ? new MultipartContent() : GetStreamContent(body.FileContent.First());
+            }
+
+            return default;
         }
         
+        private static StreamContent GetStreamContent(IBrowserFile file)
+        {
+            var memoryStream = new MemoryStream();
+            file.OpenReadStream().CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+            return new StreamContent(memoryStream);
+        }
     }
 }

@@ -10,16 +10,25 @@
 
     @if (model.BodyType == BodyType.String)
     {
-        <label>String Content:</label>
-        <InputTextArea @bind-Value="model.StringContent" @onblur="NotifyParentOfChange"/>
+        <div class="form-group">
+            <label>String Content:</label>
+            <InputTextArea class="form-control" @bind-Value="model.StringContent" @onblur="NotifyParentOfChange"/>
+        </div>
+    }
+    else if (model.BodyType == BodyType.File)
+    {
+        <div class="form-group">
+            <label>File Content:</label>
+            <InputFile class="form-control-file" OnChange="HandleFiles" multiple />
+        </div>
     }
 </EditForm>
 
 @code {
-    private Body model = new();
-
     [Parameter]
     public EventCallback<Body> OnBodyUpdated { get; set; }
+
+    private Body model = new();
 
     private async Task BodyTypeSelected(BodyType bodyType)
     {
@@ -32,19 +41,20 @@
         await NotifyParentOfChange();
     }
 
+    private void HandleFiles(InputFileChangeEventArgs e)
+    {
+        model.FileContent = new();
+        model.FileContent.AddRange(e.GetMultipleFiles());
+    }
+
     private void ClearBodyContent()
     {
         model.StringContent = null;
-    }
-
-    private async Task UpdateBodyType()
-    {
-        await NotifyParentOfChange();
+        model.FileContent = null;
     }
 
     private async Task NotifyParentOfChange()
     {
         await OnBodyUpdated.InvokeAsync(model);
     }
-
 }
