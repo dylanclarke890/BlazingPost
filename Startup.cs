@@ -26,6 +26,7 @@ namespace BlazingPostMan
         {
             services.AddScoped<IRequestProcessor, RequestProcessor>();
 
+            services.AddControllers(opt => opt.AllowEmptyInputInBodyModelBinding = true);
             services.AddRazorPages();
             services.AddServerSideBlazor();
 

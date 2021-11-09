@@ -4,7 +4,7 @@
     <InputRadioGroup @bind-Value="model.BodyType">
         @foreach (var option in Enum.GetValues<BodyType>())
         {
-            <InputRadio Value="option" @onclick="async () => { model.BodyType = option; await NotifyParentOfChange(); }"/> @option <br />
+            <InputRadio Value="option" @onclick="async () => await BodyTypeSelected(option)"/> @option <br />
         }
     </InputRadioGroup>
 
@@ -21,6 +21,22 @@
     [Parameter]
     public EventCallback<Body> OnBodyUpdated { get; set; }
 
+    private async Task BodyTypeSelected(BodyType bodyType)
+    {
+        if (bodyType == BodyType.None)
+        {
+            ClearBodyContent();
+        }
+
+        model.BodyType = bodyType;
+        await NotifyParentOfChange();
+    }
+
+    private void ClearBodyContent()
+    {
+        model.StringContent = null;
+    }
+
     private async Task UpdateBodyType()
     {
         await NotifyParentOfChange();
@@ -30,4 +46,5 @@
     {
         await OnBodyUpdated.InvokeAsync(model);
     }
+
 }

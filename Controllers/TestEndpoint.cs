@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BlazingPostMan.Data.Enums;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlazingPostMan.Controllers
 {
@@ -7,27 +8,39 @@ namespace BlazingPostMan.Controllers
     public class TestEndpointController : ControllerBase
     {
         [HttpPost]
-        public IActionResult Post()
+        public IActionResult Post([FromBody] string content)
         {
-            return Ok("testing post");
+            return OkWithBody(content, RequestType.POST);
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get([FromBody] string content)
         {
-            return Ok("testing get");
+            return OkWithBody(content, RequestType.GET);
         }
 
         [HttpPut]
-        public IActionResult Put()
+        public IActionResult Put([FromBody] string content)
         {
-            return Ok("testing put");
+            return OkWithBody(content, RequestType.PUT);
         }
 
         [HttpDelete]
-        public IActionResult Delete()
+        public IActionResult Delete([FromBody] string content)
         {
-            return Ok("testing delete");
+            return OkWithBody(content, RequestType.DELETE);
+        }
+
+        private IActionResult OkWithBody(string content, RequestType requestType)
+        {
+            string contentToReturn = $"testing {requestType}";
+
+            if (!string.IsNullOrEmpty(content))
+            {
+                contentToReturn += $", Body: {content}";
+            }
+
+            return Ok(contentToReturn);
         }
     }
 }
