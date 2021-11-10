@@ -3,8 +3,10 @@ using BlazingPostMan.Data.Helpers;
 using BlazingPostMan.Data.Models;
 using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -26,52 +28,23 @@ namespace BlazingPostMan.Services
             string url = UrlHelper.GetUrl(request.Url, request.UrlParameters);
             return request.RequestType switch
             {
-                RequestType.POST => await PostAsync(url, request.RequestBody),
-                RequestType.GET => await GetAsync(url, request.RequestBody),
-                RequestType.PUT => await PutAsync(url, request.RequestBody),
-                RequestType.DELETE => await DeleteAsync(url, request.RequestBody),
+                RequestType.POST => await SendAsync(url, request.RequestBody),
+                RequestType.GET => await SendAsync(url, request.RequestBody),
+                RequestType.PUT => await SendAsync(url, request.RequestBody),
+                RequestType.DELETE => await SendAsync(url, request.RequestBody),
                 _ => null,
             };
         }
 
-        private async Task<HttpResponseMessage> PostAsync(string url, Body body)
+        private async Task<HttpResponseMessage> SendAsync(string url, Body body)
         {
             HttpRequestMessage httpRequest = new(HttpMethod.Post, url);
-            httpRequest.Content = GetContent(body);
-
-            if (body.BodyType == BodyType.File)
-            {
-                httpRequest.Content.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
-            }
+            httpRequest.Content = await GetContent(body);
 
             return await _httpClient.SendAsync(httpRequest);
         }
 
-        private async Task<HttpResponseMessage> GetAsync(string url, Body body)
-        {
-            HttpRequestMessage httpRequest = new(HttpMethod.Get, url);
-            httpRequest.Content = GetContent(body);
-
-            return await _httpClient.SendAsync(httpRequest);
-        }
-
-        private async Task<HttpResponseMessage> PutAsync(string url, Body body)
-        {
-            HttpRequestMessage httpRequest = new(HttpMethod.Put, url);
-            httpRequest.Content = GetContent(body);
-
-            return await _httpClient.SendAsync(httpRequest);
-        }
-
-        private async Task<HttpResponseMessage> DeleteAsync(string url, Body body)
-        {
-            HttpRequestMessage httpRequest = new(HttpMethod.Delete, url);
-            httpRequest.Content = GetContent(body);
-
-            return await _httpClient.SendAsync(httpRequest);
-        }
-
-        private static HttpContent GetContent(Body body)
+        private static async Task<HttpContent> GetContent(Body body)
         {
             body ??= new() 
             { 
@@ -90,18 +63,29 @@ namespace BlazingPostMan.Services
                     return null;
                 }
                 
-                return body.FileContent.Count > 1 ? new MultipartContent() : GetStreamContent(body.FileContent.First());
+                return await GetStreamContent(body.FileContent);
             }
 
             return default;
         }
         
-        private static StreamContent GetStreamContent(IBrowserFile file)
+        private static async Task<MultipartFormDataContent> GetStreamContent(List<IBrowserFile> files)
         {
-            var memoryStream = new MemoryStream();
-            file.OpenReadStream().CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-            return new StreamContent(memoryStream);
+            var content = new MultipartFormDataContent();
+            content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+            foreach (var file in files)
+            {
+                if (file is not null)
+                {
+                    var ms = file.OpenReadStream();
+                    var memStream = new MemoryStream();
+                    await ms.CopyToAsync(memStream);
+
+                    content.Add(new StreamContent(ms, Convert.ToInt32(file.Size)), file.Name, file.Name);
+                }
+            }
+
+            return content;
         }
     }
 }

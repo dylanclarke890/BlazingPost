@@ -1,7 +1,8 @@
 ﻿using BlazingPostMan.Data.Enums;
 using Microsoft.AspNetCore.Mvc;
-using System;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BlazingPostMan.Controllers
 {
@@ -10,17 +11,18 @@ namespace BlazingPostMan.Controllers
     public class TestEndpointController : ControllerBase
     {
         [HttpPost]
-        public IActionResult Post([FromBody] string content)
+        public async Task<IActionResult> Post()
         {
+            string content = "";
             if (!StringContentRequest())
             {
                 if (Request.Form.Files.Any())
                 {
-                    content += $", {Request.Form.Files.Count} Files";
+                    content += $"{Request.Form.Files.Count} Files";
                 }
             }
 
-            return OkWithBody(content, RequestType.POST);
+            return await OkWithBody(content, RequestType.POST);
         }
 
         private bool StringContentRequest()
@@ -29,33 +31,38 @@ namespace BlazingPostMan.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get([FromBody] string content)
+        public async Task<IActionResult> Get([FromBody] string content)
         {
-            return OkWithBody(content, RequestType.GET);
+            return await OkWithBody(content, RequestType.GET);
         }
 
         [HttpPut]
-        public IActionResult Put([FromBody] string content)
+        public async Task<IActionResult> Put([FromBody] string content)
         {
-            return OkWithBody(content, RequestType.PUT);
+            return await OkWithBody(content, RequestType.PUT);
         }
 
         [HttpDelete]
-        public IActionResult Delete([FromBody] string content)
+        public async Task<IActionResult> Delete([FromBody] string content)
         {
-            return OkWithBody(content, RequestType.DELETE);
+            return await OkWithBody(content, RequestType.DELETE);
         }
 
-        private IActionResult OkWithBody(string content, RequestType requestType)
+        private async Task<IActionResult> OkWithBody(string content, RequestType requestType)
         {
             string contentToReturn = $"testing {requestType}";
-
-            if (!string.IsNullOrEmpty(content))
+            var bodyContent = await new StreamReader(Request.Body).ReadToEndAsync();
+            if (!IsNullOrEmptyRequestBody(bodyContent))
             {
-                contentToReturn += $", Body: {content}";
+                contentToReturn += $", Body: {bodyContent}";
             }
 
-            return Ok(contentToReturn);
+            return Ok($"{contentToReturn}, {content}");
+        }
+
+        private static bool IsNullOrEmptyRequestBody(string content)
+        {
+            return content == "\"\"" || content == "\"null\"";
         }
     }
 }
