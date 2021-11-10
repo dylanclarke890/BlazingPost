@@ -13,39 +13,25 @@ namespace BlazingPostMan.Controllers
         [HttpPost]
         public async Task<IActionResult> Post()
         {
-            string content = "";
-            if (!StringContentRequest())
-            {
-                if (Request.Form.Files.Any())
-                {
-                    content += $"{Request.Form.Files.Count} Files";
-                }
-            }
-
-            return await OkWithBody(content, RequestType.POST);
-        }
-
-        private bool StringContentRequest()
-        {
-            return Request.ContentType == "application/json; charset=utf-8";
+            return await ProcessRequest(RequestType.POST);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromBody] string content)
+        public async Task<IActionResult> Get()
         {
-            return await OkWithBody(content, RequestType.GET);
+            return await ProcessRequest(RequestType.GET);
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] string content)
+        public async Task<IActionResult> Put()
         {
-            return await OkWithBody(content, RequestType.PUT);
+            return await ProcessRequest(RequestType.PUT);
         }
 
         [HttpDelete]
-        public async Task<IActionResult> Delete([FromBody] string content)
+        public async Task<IActionResult> Delete()
         {
-            return await OkWithBody(content, RequestType.DELETE);
+            return await ProcessRequest(RequestType.DELETE);
         }
 
         private async Task<IActionResult> OkWithBody(string content, RequestType requestType)
@@ -58,6 +44,25 @@ namespace BlazingPostMan.Controllers
             }
 
             return Ok($"{contentToReturn}, {content}");
+        }
+
+        private async Task<IActionResult> ProcessRequest(RequestType requestType)
+        {
+            string content = "";
+            if (!StringContentRequest())
+            {
+                if (Request.Form.Files.Any())
+                {
+                    content += $"{Request.Form.Files.Count} Files";
+                }
+            }
+
+            return await OkWithBody(content, requestType);
+        }
+
+        private bool StringContentRequest()
+        {
+            return Request.ContentType == "application/json; charset=utf-8";
         }
 
         private static bool IsNullOrEmptyRequestBody(string content)

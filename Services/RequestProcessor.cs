@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -28,23 +26,23 @@ namespace BlazingPostMan.Services
             string url = UrlHelper.GetUrl(request.Url, request.UrlParameters);
             return request.RequestType switch
             {
-                RequestType.POST => await SendAsync(url, request.RequestBody),
-                RequestType.GET => await SendAsync(url, request.RequestBody),
-                RequestType.PUT => await SendAsync(url, request.RequestBody),
-                RequestType.DELETE => await SendAsync(url, request.RequestBody),
+                RequestType.POST => await SendAsync(url, request.RequestBody, HttpMethod.Post),
+                RequestType.GET => await SendAsync(url, request.RequestBody, HttpMethod.Get),
+                RequestType.PUT => await SendAsync(url, request.RequestBody, HttpMethod.Put),
+                RequestType.DELETE => await SendAsync(url, request.RequestBody, HttpMethod.Delete),
                 _ => null,
             };
         }
 
-        private async Task<HttpResponseMessage> SendAsync(string url, Body body)
+        private async Task<HttpResponseMessage> SendAsync(string url, Body body, HttpMethod httpMethod)
         {
-            HttpRequestMessage httpRequest = new(HttpMethod.Post, url);
-            httpRequest.Content = await GetContent(body);
+            HttpRequestMessage httpRequest = new(httpMethod, url);
+            httpRequest.Content = GetContent(body);
 
             return await _httpClient.SendAsync(httpRequest);
         }
 
-        private static async Task<HttpContent> GetContent(Body body)
+        private static HttpContent GetContent(Body body)
         {
             body ??= new() 
             { 
@@ -63,24 +61,22 @@ namespace BlazingPostMan.Services
                     return null;
                 }
                 
-                return await GetStreamContent(body.FileContent);
+                return GetStreamContent(body.FileContent);
             }
 
             return default;
         }
         
-        private static async Task<MultipartFormDataContent> GetStreamContent(List<IBrowserFile> files)
+        private static MultipartFormDataContent GetStreamContent(List<IBrowserFile> files)
         {
             var content = new MultipartFormDataContent();
             content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+
             foreach (var file in files)
             {
                 if (file is not null)
                 {
                     var ms = file.OpenReadStream();
-                    var memStream = new MemoryStream();
-                    await ms.CopyToAsync(memStream);
-
                     content.Add(new StreamContent(ms, Convert.ToInt32(file.Size)), file.Name, file.Name);
                 }
             }
