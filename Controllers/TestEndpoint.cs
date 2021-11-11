@@ -45,6 +45,13 @@ namespace BlazingPostMan.Controllers
                 }
             }
 
+            content += $"{Request.Headers.Count} Headers";
+
+            foreach (var header in Request.Headers)
+            {
+                content += $"{header.Key}, {header.Value}";
+            }
+
             return await OkWithBody(content, requestType);
         }
         private bool StringContentRequest()
@@ -54,14 +61,14 @@ namespace BlazingPostMan.Controllers
 
         private async Task<IActionResult> OkWithBody(string content, RequestType requestType)
         {
-            string contentToReturn = $"testing {requestType}";
+            string contentToReturn = $"Testing {requestType}";
             var bodyContent = JsonConvert.DeserializeObject<string>(await new StreamReader(Request.Body).ReadToEndAsync());
             if (!string.IsNullOrEmpty(bodyContent))
             {
-                contentToReturn += $", Body: {bodyContent}";
+                contentToReturn += $"Body: {bodyContent}";
             }
 
-            return Ok($"{contentToReturn}, {content}");
+            return Ok($"{contentToReturn} {content}");
         }
     }
 }

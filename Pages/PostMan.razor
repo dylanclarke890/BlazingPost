@@ -4,10 +4,12 @@
 <!--
 TODO:
     1. Update error UI (low priority).
-    2. Add headers to requests.
-    3. Add authorisation to requests.
-    4. Add request history (w/ mysql || sql server)
-    5. Rerun prev requests.
+    2. Update preview display.
+    3. Update controller return methods.
+    4. Add authorisation to requests.
+    5. Add request history (w/ mysql || sql server)
+    6. Rerun prev requests.
+    7. Error when sending request after uploading file but changing tabs away from Body before sending.
 -->
 
 <h3>BlazingPostMan</h3>
@@ -40,13 +42,13 @@ TODO:
 
 <TabSet>
     <TabChild Title="Params">
-        <KeyValuesTable Title="Add Parameters" KeyValuePairs="Params" OnAction="StateHasChanged" />
+        <KeyValuesTable Title="Add Parameters" KeyValuePairs="Params" OnAction="StateHasChanged" WhiteSpaceAllowedInKey="true" />
     </TabChild>
     <TabChild Title="Body">
         <BodyContent Body="RequestBody" OnBodyUpdated="(b) => RequestBody = b"/>
     </TabChild>
     <TabChild Title="Headers">
-        <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged" />
+        <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged" WhiteSpaceAllowedInKey="false"/>
     </TabChild>
 </TabSet>
 
@@ -55,7 +57,7 @@ TODO:
     private RequestType requestType { get; set; }
 
     private Dictionary<string, string> Params = new() { ["test key"] = "this is a test val" };
-    private Dictionary<string, string> Headers = new() { ["test key"] = "this is a test val" };
+    private Dictionary<string, string> Headers = new() { ["key"] = "this is a test val" };
     private Body RequestBody;
 
     private string requestResult;

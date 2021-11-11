@@ -14,6 +14,11 @@
                 <p class="text-danger">Error: Entry value cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
                 break;
             }
+        case ErrorTypes.WhiteSpaceInKey:
+            {
+                <p class="text-danger">Error: Key cannot contain whitespace. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
+                break;
+            }
         default:
             break;
     }
@@ -60,10 +65,16 @@
     public Dictionary<string, string> KeyValuePairs { get; set; }
 
     [Parameter]
+    public bool WhiteSpaceAllowedInKey { get; set; }
+
+    [Parameter]
     public EventCallback OnAction { get; set; }
 
     private string NewKey { get; set; }
     private string NewValue { get; set; }
+
+    private string OldKey;
+    private string OldValue;
 
     private bool Error = false;
     private ErrorTypes ErrorType;
@@ -75,6 +86,12 @@
         if (string.IsNullOrEmpty(NewValue))
         {
             ShowError(ErrorTypes.EmptyValue);
+            return;
+        }
+
+        if (!WhiteSpaceAllowedInKey && NewKey.Contains(" "))
+        {
+            ShowError(ErrorTypes.WhiteSpaceInKey);
             return;
         }
 
@@ -102,6 +119,11 @@
     {
         NewKey = key;
         NewValue = KeyValuePairs[key];
+
+        // save current vals for updating later
+        OldKey = NewKey;
+        OldValue = NewValue;
+
         Editing = true;
     }
 
@@ -113,8 +135,12 @@
             return;
         }
 
+        KeyValuePairs.Remove(OldKey);
         KeyValuePairs[NewKey] = NewValue;
+
+        ClearInputs();
         Editing = false;
+
         await OnAction.InvokeAsync();
     }
 
@@ -141,5 +167,7 @@
     {
         NewKey = string.Empty;
         NewValue = string.Empty;
+        OldKey = null;
+        OldValue = null;
     }
 }

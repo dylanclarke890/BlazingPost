@@ -26,20 +26,28 @@ namespace BlazingPostMan.Services
             string url = UrlHelper.GetUrl(request.Url, request.UrlParameters);
             return request.RequestType switch
             {
-                RequestType.POST => await SendAsync(url, request.RequestBody, HttpMethod.Post),
-                RequestType.GET => await SendAsync(url, request.RequestBody, HttpMethod.Get),
-                RequestType.PUT => await SendAsync(url, request.RequestBody, HttpMethod.Put),
-                RequestType.DELETE => await SendAsync(url, request.RequestBody, HttpMethod.Delete),
+                RequestType.POST => await SendAsync(url, request, HttpMethod.Post),
+                RequestType.GET => await SendAsync(url, request, HttpMethod.Get),
+                RequestType.PUT => await SendAsync(url, request, HttpMethod.Put),
+                RequestType.DELETE => await SendAsync(url, request, HttpMethod.Delete),
                 _ => null,
             };
         }
 
-        private async Task<HttpResponseMessage> SendAsync(string url, Body body, HttpMethod httpMethod)
+        private async Task<HttpResponseMessage> SendAsync(string url, Request request, HttpMethod httpMethod)
         {
-            HttpRequestMessage httpRequest = new(httpMethod, url);
-            httpRequest.Content = GetContent(body);
+            HttpRequestMessage httpRequest = GetMessage(url, request, httpMethod);
 
             return await _httpClient.SendAsync(httpRequest);
+        }
+
+        private static HttpRequestMessage GetMessage(string url, Request request, HttpMethod httpMethod)
+        {
+            HttpRequestMessage httpRequest = new(httpMethod, url);
+            httpRequest.Content = GetContent(request.RequestBody);
+            httpRequest = GetHeaders(httpRequest, request.Headers);
+
+            return httpRequest;
         }
 
         private static HttpContent GetContent(Body body)
@@ -65,6 +73,15 @@ namespace BlazingPostMan.Services
             }
 
             return default;
+        }
+
+        private static HttpRequestMessage GetHeaders(HttpRequestMessage httpRequest, Dictionary<string, string> headers)
+        {
+            foreach (var keyValue in headers)
+            {
+                httpRequest.Headers.Add(keyValue.Key, keyValue.Value);
+            }
+            return httpRequest;
         }
         
         private static MultipartFormDataContent GetStreamContent(List<IBrowserFile> files)
