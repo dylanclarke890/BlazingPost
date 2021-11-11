@@ -1,5 +1,6 @@
 ﻿using BlazingPostMan.Data.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,19 +34,6 @@ namespace BlazingPostMan.Controllers
         {
             return await ProcessRequest(RequestType.DELETE);
         }
-
-        private async Task<IActionResult> OkWithBody(string content, RequestType requestType)
-        {
-            string contentToReturn = $"testing {requestType}";
-            var bodyContent = await new StreamReader(Request.Body).ReadToEndAsync();
-            if (!IsNullOrEmptyRequestBody(bodyContent))
-            {
-                contentToReturn += $", Body: {bodyContent}";
-            }
-
-            return Ok($"{contentToReturn}, {content}");
-        }
-
         private async Task<IActionResult> ProcessRequest(RequestType requestType)
         {
             string content = "";
@@ -59,15 +47,21 @@ namespace BlazingPostMan.Controllers
 
             return await OkWithBody(content, requestType);
         }
-
         private bool StringContentRequest()
         {
             return Request.ContentType == "application/json; charset=utf-8";
         }
 
-        private static bool IsNullOrEmptyRequestBody(string content)
+        private async Task<IActionResult> OkWithBody(string content, RequestType requestType)
         {
-            return content == "\"\"" || content == "\"null\"";
+            string contentToReturn = $"testing {requestType}";
+            var bodyContent = JsonConvert.DeserializeObject<string>(await new StreamReader(Request.Body).ReadToEndAsync());
+            if (!string.IsNullOrEmpty(bodyContent))
+            {
+                contentToReturn += $", Body: {bodyContent}";
+            }
+
+            return Ok($"{contentToReturn}, {content}");
         }
     }
 }

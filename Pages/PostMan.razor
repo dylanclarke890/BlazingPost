@@ -43,7 +43,7 @@ TODO:
         <UrlParameters Params="Params" OnParamAction="StateHasChanged" />
     </TabChild>
     <TabChild Title="Body">
-        <BodyContent OnBodyUpdated="(b) => RequestBody = b"/>
+        <BodyContent Body="RequestBody" OnBodyUpdated="(b) => RequestBody = b"/>
     </TabChild>
 </TabSet>
 

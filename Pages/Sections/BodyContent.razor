@@ -1,21 +1,21 @@
 ﻿<h3>Body</h3>
 
-<EditForm Model="model">
-    <InputRadioGroup @bind-Value="model.BodyType">
+<EditForm Model="Body">
+    <InputRadioGroup @bind-Value="Body.BodyType">
         @foreach (var option in Enum.GetValues<BodyType>())
         {
             <InputRadio Value="option" @onclick="async () => await BodyTypeSelected(option)"/> @option <br />
         }
     </InputRadioGroup>
 
-    @if (model.BodyType == BodyType.String)
+    @if (Body.BodyType == BodyType.String)
     {
         <div class="form-group">
             <label>String Content:</label>
-            <InputTextArea class="form-control" @bind-Value="model.StringContent" @onblur="NotifyParentOfChange"/>
+            <InputTextArea class="form-control" @bind-Value="Body.StringContent" @onblur="NotifyParentOfChange"/>
         </div>
     }
-    else if (model.BodyType == BodyType.File)
+    else if (Body.BodyType == BodyType.File)
     {
         <div class="form-group">
             <label>File Content:</label>
@@ -26,35 +26,42 @@
 
 @code {
     [Parameter]
+    public Body Body { get; set; }
+
+    [Parameter]
     public EventCallback<Body> OnBodyUpdated { get; set; }
 
-    private Body model = new();
+    protected override void OnParametersSet()
+    {
+        Body ??= new();
+        base.OnParametersSet();
+    }
 
-    private async Task BodyTypeSelected(BodyType bodyType)
+        private async Task BodyTypeSelected(BodyType bodyType)
     {
         if (bodyType == BodyType.None)
         {
             ClearBodyContent();
         }
 
-        model.BodyType = bodyType;
+        Body.BodyType = bodyType;
         await NotifyParentOfChange();
     }
 
     private void HandleFiles(InputFileChangeEventArgs e)
     {
-        model.FileContent = new();
-        model.FileContent.AddRange(e.GetMultipleFiles());
+        Body.FileContent = new();
+        Body.FileContent.AddRange(e.GetMultipleFiles());
     }
 
     private void ClearBodyContent()
     {
-        model.StringContent = null;
-        model.FileContent = null;
+        Body.StringContent = null;
+        Body.FileContent = null;
     }
 
     private async Task NotifyParentOfChange()
     {
-        await OnBodyUpdated.InvokeAsync(model);
+        await OnBodyUpdated.InvokeAsync(Body);
     }
 }
