@@ -3,7 +3,7 @@
     public enum ErrorTypes
     {
         NotSpecified = 0,
-        ExistingParamKey = 1,
-        EmptyParamValue = 2
+        ExistingKey = 1,
+        EmptyValue = 2
     }
 }

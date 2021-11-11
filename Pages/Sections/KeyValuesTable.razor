@@ -1,0 +1,145 @@
+﻿<h4>@Title</h4>
+
+@if (Error)
+{
+    switch (ErrorType)
+    {
+        case ErrorTypes.ExistingKey:
+            {
+                <p class="text-danger">Error: Entry with that key exists. Would you like to <span class="text-primary hand" @onclick="ConfirmValueUpdate">update</span> it?<span class="text-dark hand" @onclick="ClearError"> X</span></p>
+                break;
+            }
+        case ErrorTypes.EmptyValue:
+            {
+                <p class="text-danger">Error: Entry value cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
+                break;
+            }
+        default:
+            break;
+    }
+}
+
+<table class="table mt-3">
+    <tr>
+        <th>Key</th>
+        <th>Value</th>
+        <th>Action</th>
+    </tr>
+    @foreach (var keyValue in KeyValuePairs)
+    {
+        <tr>
+            <td>@keyValue.Key</td>
+            <td>@keyValue.Value</td>
+            <th>
+                <button class="btn btn-primary" @onclick="() => DeleteValue(keyValue.Key)">Delete</button>
+                <button class="btn btn-primary" @onclick="() => EditValue(keyValue.Key)">Edit</button>
+            </th>
+        </tr>
+    }
+    <tr>
+        <td><input class="form-control" id="new-key" type="text" @bind="NewKey" /></td>
+        <td><input class="form-control" id="new-val" type="text" @bind="NewValue" /></td>
+        <td>
+            @if (Editing)
+            {
+                <button class="btn btn-primary" @onclick="UpdateValue">Update</button>
+            }
+            else
+            {
+                <button class="btn btn-primary" @onclick="AddValue">Add New</button>
+            }
+        </td>
+    </tr>
+</table>
+
+@code {
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public Dictionary<string, string> KeyValuePairs { get; set; }
+
+    [Parameter]
+    public EventCallback OnAction { get; set; }
+
+    private string NewKey { get; set; }
+    private string NewValue { get; set; }
+
+    private bool Error = false;
+    private ErrorTypes ErrorType;
+
+    private bool Editing = false;
+
+    private async Task AddValue()
+    {
+        if (string.IsNullOrEmpty(NewValue))
+        {
+            ShowError(ErrorTypes.EmptyValue);
+            return;
+        }
+
+        var success = KeyValuePairs.TryAdd(NewKey, NewValue);
+
+        if (success)
+        {
+            await OnAction.InvokeAsync();
+            ClearInputs();
+            ClearError();
+        }
+        else
+        {
+            ShowError(ErrorTypes.ExistingKey);
+        }
+    }
+
+    private async Task DeleteValue(string key)
+    {
+        KeyValuePairs.Remove(key);
+        await OnAction.InvokeAsync();
+    }
+
+    private void EditValue(string key)
+    {
+        NewKey = key;
+        NewValue = KeyValuePairs[key];
+        Editing = true;
+    }
+
+    private async Task UpdateValue()
+    {
+        if (string.IsNullOrEmpty(NewValue))
+        {
+            ShowError(ErrorTypes.EmptyValue);
+            return;
+        }
+
+        KeyValuePairs[NewKey] = NewValue;
+        Editing = false;
+        await OnAction.InvokeAsync();
+    }
+
+    private async Task ConfirmValueUpdate()
+    {
+        await UpdateValue();
+        ClearError();
+        ClearInputs();
+    }
+
+    private void ShowError(ErrorTypes errorType)
+    {
+        Error = true;
+        ErrorType = errorType;
+    }
+
+    private void ClearError()
+    {
+        Error = false;
+        ErrorType = ErrorTypes.NotSpecified;
+    }
+
+    private void ClearInputs()
+    {
+        NewKey = string.Empty;
+        NewValue = string.Empty;
+    }
+}

@@ -40,10 +40,13 @@ TODO:
 
 <TabSet>
     <TabChild Title="Params">
-        <UrlParameters Params="Params" OnParamAction="StateHasChanged" />
+        <KeyValuesTable Title="Add Parameters" KeyValuePairs="Params" OnAction="StateHasChanged" />
     </TabChild>
     <TabChild Title="Body">
         <BodyContent Body="RequestBody" OnBodyUpdated="(b) => RequestBody = b"/>
+    </TabChild>
+    <TabChild Title="Headers">
+        <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged" />
     </TabChild>
 </TabSet>
 
@@ -52,6 +55,7 @@ TODO:
     private RequestType requestType { get; set; }
 
     private Dictionary<string, string> Params = new() { ["test key"] = "this is a test val" };
+    private Dictionary<string, string> Headers = new() { ["test key"] = "this is a test val" };
     private Body RequestBody;
 
     private string requestResult;
@@ -61,7 +65,7 @@ TODO:
     private async Task SendRequest()
     {
         sending = true;
-        var result = await requestProcessor.ProcessRequest(new(Url, requestType, Params, RequestBody));
+        var result = await requestProcessor.ProcessRequest(new(Url, requestType, Params, Headers, RequestBody));
         await HandleContent(result);
         sending = false;
     }
