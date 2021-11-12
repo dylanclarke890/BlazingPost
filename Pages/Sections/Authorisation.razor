@@ -1,0 +1,52 @@
+﻿<h4>Authorisation</h4>
+
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <label>Please select an auth type:</label>
+            <select @bind="AuthorisationData.AuthorisationType">
+                <option value="@AuthorisationType.NoAuth">@AuthorisationType.NoAuth</option>
+                <option value="@AuthorisationType.ApiKey">@AuthorisationType.ApiKey</option>
+                <option value="@AuthorisationType.BearerToken">@AuthorisationType.BearerToken</option>
+            </select>
+        </div>
+        <div class="col-9">
+            @if (AuthorisationData.AuthorisationType == AuthorisationType.ApiKey)
+            {
+                <div class="form-group row">
+                    <label class="col-2 col-form-label" for="api-key-input">Key: </label>
+                    <input class="col-10 form-control" id="api-key-input" type="text" @bind="AuthorisationData.Key" />
+                </div>
+                <div class="form-group row">
+                    <label class="col-2 col-form-label" for="api-value-input">Value: </label>
+                    <input class="col-10 form-control" id="api-value-input" type="text" @bind="AuthorisationData.Value" />
+                </div>
+                <label>Add To:</label>
+                <select @bind="AuthorisationData.RelatedSection">
+                    <option value="@Section.Params">Query Params</option>
+                    <option value="@Section.Headers">@Section.Headers</option>
+                </select>
+            }
+            else if (AuthorisationData.AuthorisationType == AuthorisationType.BearerToken)
+            {
+                <div class="form-group row">
+                    <label class="col-2 col-form-label" for="bearer-token-input">Bearer: </label>
+                    <input class="col-10 form-control" id="bearer-token-input" type="text" @bind="AuthorisationData.BearerToken" />
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public AuthorisationData AuthorisationData { get; set; }
+
+    [Parameter]
+    public EventCallback<AuthorisationData> OnAuthorisationUpdated { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        AuthorisationData ??= new() { RelatedSection = Section.Params };
+    }
+}

@@ -9,6 +9,11 @@
                 <p class="text-danger">Error: Entry with that key exists. Would you like to <span class="text-primary hand" @onclick="ConfirmValueUpdate">update</span> it?<span class="text-dark hand" @onclick="ClearError"> X</span></p>
                 break;
             }
+        case ErrorTypes.EmptyKey:
+            {
+                <p class="text-danger">Error: Entry key cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
+                break;
+            }
         case ErrorTypes.EmptyValue:
             {
                 <p class="text-danger">Error: Entry value cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
@@ -68,7 +73,13 @@
     public bool WhiteSpaceAllowedInKey { get; set; }
 
     [Parameter]
+    public List<string> MonitorKeys { get; set; }
+
+    [Parameter]
     public EventCallback OnAction { get; set; }
+
+    [Parameter]
+    public EventCallback<KeyValuePair<string, string>> OnMonitoredKeyActioned { get; set; }
 
     private string NewKey { get; set; }
     private string NewValue { get; set; }
@@ -83,23 +94,15 @@
 
     private async Task AddValue()
     {
-        if (string.IsNullOrEmpty(NewValue))
+        if (!Validation())
         {
-            ShowError(ErrorTypes.EmptyValue);
-            return;
-        }
-
-        if (!WhiteSpaceAllowedInKey && NewKey.Contains(" "))
-        {
-            ShowError(ErrorTypes.WhiteSpaceInKey);
             return;
         }
 
         var success = KeyValuePairs.TryAdd(NewKey, NewValue);
-
         if (success)
         {
-            await OnAction.InvokeAsync();
+            await NotifyParent();
             ClearInputs();
             ClearError();
         }
@@ -107,6 +110,38 @@
         {
             ShowError(ErrorTypes.ExistingKey);
         }
+    }
+
+    private async Task NotifyParent()
+    {
+        await OnAction.InvokeAsync();
+        if (MonitorKeys.Any(key => key == NewKey))
+        {
+            await OnMonitoredKeyActioned.InvokeAsync(new(NewKey, NewValue));
+        }
+    }
+
+    private bool Validation()
+    {
+        if (string.IsNullOrEmpty(NewKey))
+        {
+            ShowError(ErrorTypes.EmptyKey);
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(NewValue))
+        {
+            ShowError(ErrorTypes.EmptyValue);
+            return false;
+        }
+
+        if (!WhiteSpaceAllowedInKey && NewKey.Contains(" "))
+        {
+            ShowError(ErrorTypes.WhiteSpaceInKey);
+            return false;
+        }
+
+        return true;
     }
 
     private async Task DeleteValue(string key)

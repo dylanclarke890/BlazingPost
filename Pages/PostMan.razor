@@ -32,13 +32,18 @@
 
 <TabSet>
     <TabChild Title="Params">
-        <KeyValuesTable Title="Add Parameters" KeyValuePairs="Params" OnAction="StateHasChanged" WhiteSpaceAllowedInKey="true" />
+        <KeyValuesTable Title="Add Parameters" KeyValuePairs="Params" OnAction="StateHasChanged"
+                        WhiteSpaceAllowedInKey="true" MonitorKeys="QueryKeysToNotifyOf" OnMonitoredKeyActioned="HandleKeyValueUpdate" />
     </TabChild>
     <TabChild Title="Body">
         <BodyContent Body="RequestBody" OnBodyUpdated="(b) => RequestBody = b"/>
     </TabChild>
     <TabChild Title="Headers">
-        <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged" WhiteSpaceAllowedInKey="false"/>
+        <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged" 
+                        WhiteSpaceAllowedInKey="false" MonitorKeys="HeaderKeysToNotifyOf" OnMonitoredKeyActioned="HandleKeyValueUpdate" />
+    </TabChild>
+    <TabChild Title="Authorisation">
+        <Authorisation AuthorisationData="AuthorisationData" OnAuthorisationUpdated="(a) => AuthorisationData = a"/>
     </TabChild>
 </TabSet>
 
@@ -48,7 +53,10 @@
 
     private Dictionary<string, string> Params = new() { ["test key"] = "this is a test val" };
     private Dictionary<string, string> Headers = new() { ["key"] = "this is a test val" };
+    private List<string> HeaderKeysToNotifyOf = new() { "ApiKey", "Bearer" };
+    private List<string> QueryKeysToNotifyOf = new() { "ApiKey", "Bearer" };
     private Body RequestBody;
+    private AuthorisationData AuthorisationData;
 
     private string requestResult;
 
@@ -57,9 +65,29 @@
     private async Task SendRequest()
     {
         sending = true;
-        var result = await requestProcessor.ProcessRequest(new(Url, requestType, Params, Headers, RequestBody));
+        var result = await requestProcessor.ProcessRequest(new(Url, requestType, Params, Headers, RequestBody, AuthorisationData));
         await HandleContent(result);
         sending = false;
+    }
+
+    private void HandleKeyValueUpdate(KeyValuePair<string, string> keyValue)
+    {
+        switch (keyValue.Key)
+        {
+            case "ApiKey":
+                AuthorisationData ??= new();
+                AuthorisationData.AuthorisationType = AuthorisationType.ApiKey;
+                AuthorisationData.Key = keyValue.Key;
+                AuthorisationData.Value = keyValue.Value;
+                break;
+            case "Bearer":
+                AuthorisationData ??= new();
+                AuthorisationData.AuthorisationType = AuthorisationType.BearerToken;
+                AuthorisationData.BearerToken = keyValue.Value;
+                break;
+            default:
+                break;
+        }
     }
 
     private async Task HandleContent(HttpResponseMessage response)

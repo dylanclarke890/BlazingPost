@@ -4,7 +4,8 @@
     {
         NotSpecified = 0,
         ExistingKey = 1,
-        EmptyValue = 2,
-        WhiteSpaceInKey = 3
+        EmptyKey = 2,
+        EmptyValue = 3,
+        WhiteSpaceInKey = 4
     }
 }
