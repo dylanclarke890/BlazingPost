@@ -64,7 +64,7 @@
         Url ??= "https://localhost:44384/api/testendpoint";
         Params ??= new() { ["test key"] = "this is a test val" };
         Headers ??= new() { ["key"] = "this is a test val" };
-        KeysToNotifyOf ??= new() { "ApiKey", "Authorisation", "Authorization" };
+        KeysToNotifyOf ??= new() { "Authorisation", "Authorization" };
         RequestBody ??= new();
         AuthorisationData ??= new();
     }
@@ -84,29 +84,19 @@
 
     private void HandleMonitoredKeyValue(KeyValuePair<string, string> keyValue)
     {
-        switch (keyValue.Key)
+        if (keyValue.Key == "Authorisation")
         {
-            case "ApiKey":
-                AuthorisationData ??= new();
-                AuthorisationData.AuthorisationType = AuthorisationType.ApiKey;
-                AuthorisationData.Key = keyValue.Key;
-                AuthorisationData.Value = keyValue.Value;
-                break;
-            case "Authorisation":
-                AuthorisationData ??= new();
-                AuthorisationData.AuthorisationType = AuthorisationType.BearerToken;
+            AuthorisationData ??= new();
+            AuthorisationData.AuthorisationType = AuthorisationType.BearerToken;
 
-                if (AuthorisationData.RelatedSection is Section.Headers && keyValue.Value is null)
-                {
-                    RemoveExistingAuthFromSection(Section.Headers);
-                }
-                else
-                {
-                    AuthorisationData.BearerToken = keyValue.Value;
-                }
-                break;
-            default:
-                break;
+            if (AuthorisationData.RelatedSection is Section.Headers && keyValue.Value is null)
+            {
+                RemoveExistingAuthData();
+            }
+            else
+            {
+                AuthorisationData.BearerToken = keyValue.Value;
+            }
         }
     }
 
@@ -115,32 +105,29 @@
 
     private void HandleAuthUpdate(AuthorisationData authorisationData)
     {
+        RemoveExistingAuthData();
         if (authorisationData.AuthorisationType is AuthorisationType.NoAuth)
         {
-            RemoveExistingAuthFromSection(Section.Authorisation);
             return;
         }
 
         if (authorisationData.RelatedSection is Section.Params && !EmptyOrNullApiKey(authorisationData))
         {
-            RemoveExistingAuthFromSection(Section.Headers);
             Params.TryAdd(authorisationData.Key, authorisationData.Value);
         }
         else if (authorisationData.RelatedSection is Section.Headers && !EmptyOrNullApiKey(authorisationData))
         {
-            RemoveExistingAuthFromSection(Section.Params);
             Headers.TryAdd(authorisationData.Key, authorisationData.Value);
         }
         else if (authorisationData.RelatedSection is Section.Headers && !string.IsNullOrEmpty(authorisationData.BearerToken))
         {
-            RemoveExistingAuthFromSection(Section.Params);
             Headers.TryAdd("Authorisation", authorisationData.BearerToken);
         }
 
         AuthorisationData = authorisationData;
     }
 
-    private void RemoveExistingAuthFromSection(Section section)
+    private void RemoveExistingAuthData()
     {
         Params.TryRemove(AuthorisationData?.Key);
         Headers.TryRemove(AuthorisationData?.Key);
