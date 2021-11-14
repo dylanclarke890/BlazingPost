@@ -8,14 +8,14 @@
         }
     </InputRadioGroup>
 
-    @if (Body.BodyType == BodyType.String)
+    @if (Body.BodyType is BodyType.String)
     {
         <div class="form-group">
             <label>String Content:</label>
             <InputTextArea class="form-control" @bind-Value="Body.StringContent" @onblur="NotifyParentOfChange"/>
         </div>
     }
-    else if (Body.BodyType == BodyType.File)
+    else if (Body.BodyType is BodyType.File)
     {
         <div class="form-group">
             <label>File Content:</label>
@@ -39,7 +39,7 @@
 
     private async Task BodyTypeSelected(BodyType bodyType)
     {
-        if (bodyType == BodyType.None)
+        if (bodyType is BodyType.None)
         {
             ClearBodyContent();
         }

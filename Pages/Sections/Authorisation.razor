@@ -72,15 +72,15 @@
 
     private async Task HandleAuthTypeSelected()
     {
-        if (AuthorisationData.AuthorisationType == AuthorisationType.NoAuth)
+        if (AuthorisationData.AuthorisationType is AuthorisationType.NoAuth)
         {
             await OnAuthorisationUpdated.InvokeAsync(AuthorisationData);
         }
-        else if (AuthorisationData.AuthorisationType == AuthorisationType.ApiKey)
+        else if (AuthorisationData.AuthorisationType is AuthorisationType.ApiKey)
         {
             await HandleApiKey();
         }
-        else if (AuthorisationData.AuthorisationType == AuthorisationType.BearerToken)
+        else if (AuthorisationData.AuthorisationType is AuthorisationType.BearerToken)
         {
             await HandleBearerToken();
         }

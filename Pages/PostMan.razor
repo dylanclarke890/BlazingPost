@@ -84,7 +84,7 @@
                 AuthorisationData ??= new();
                 AuthorisationData.AuthorisationType = AuthorisationType.BearerToken;
 
-                if (AuthorisationData.RelatedSection is Section.Headers && keyValue.Value == null)
+                if (AuthorisationData.RelatedSection is Section.Headers && keyValue.Value is null)
                 {
                     RemoveExistingAuthFromSection(Section.Headers);
                 }
@@ -103,23 +103,23 @@
 
     private void HandleAuthUpdate(AuthorisationData authorisationData)
     {
-        if (authorisationData.AuthorisationType == AuthorisationType.NoAuth)
+        if (authorisationData.AuthorisationType is AuthorisationType.NoAuth)
         {
             RemoveExistingAuthFromSection(Section.Authorisation);
             return;
         }
 
-        if (authorisationData.RelatedSection == Section.Params && !EmptyOrNullApiKey(authorisationData))
+        if (authorisationData.RelatedSection is Section.Params && !EmptyOrNullApiKey(authorisationData))
         {
             RemoveExistingAuthFromSection(Section.Headers);
             Params.TryAdd(authorisationData.Key, authorisationData.Value);
         }
-        else if (authorisationData.RelatedSection == Section.Headers && !EmptyOrNullApiKey(authorisationData))
+        else if (authorisationData.RelatedSection is Section.Headers && !EmptyOrNullApiKey(authorisationData))
         {
             RemoveExistingAuthFromSection(Section.Params);
             Headers.TryAdd(authorisationData.Key, authorisationData.Value);
         }
-        else if (authorisationData.RelatedSection == Section.Headers && !string.IsNullOrEmpty(authorisationData.BearerToken))
+        else if (authorisationData.RelatedSection is Section.Headers && !string.IsNullOrEmpty(authorisationData.BearerToken))
         {
             RemoveExistingAuthFromSection(Section.Params);
             Headers.TryAdd("Authorisation", authorisationData.BearerToken);
