@@ -5,7 +5,7 @@
 <h3>BlazingPostMan</h3>
 
 <div class="form-group row">
-    <label class="col-2 col-form-label" for="url-input">Enter a URL: </label>
+    <label class="col-auto col-form-label" for="url-input">Enter a URL: </label>
     <input class="col-10 form-control" id="url-input" type="text" @bind="Url" />
 </div>
 
@@ -147,9 +147,3 @@
         Headers.TryRemove("Authorisation");
     }
 }
-
-<style>
-    .hand {
-        cursor: pointer;
-    }
-</style>

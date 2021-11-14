@@ -1,28 +1,10 @@
-﻿@switch (Error)
+﻿@if (Display)
 {
-    case ErrorTypes.ExistingKey:
-        {
-            <p class="text-danger">Error: Entry with that key exists. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
-            break;
-        }
-    case ErrorTypes.EmptyKey:
-        {
-            <p class="text-danger">Error: Key cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
-            break;
-        }
-    case ErrorTypes.EmptyValue:
-        {
-            <p class="text-danger">Error: Value cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
-            break;
-        }
-    case ErrorTypes.WhiteSpaceInKey:
-        {
-            <p class="text-danger">Error: Key cannot contain whitespace. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
-            break;
-        }
-    default:
-        break;
+    <div class="alert-danger p-2 mb-2 d-flex justify-content-between rounded">
+        <span>@GetErrorMessage()</span><span class="hand" @onclick="ClearError"><i class="fas fa-times mr-2"></i></span>
+    </div>
 }
+
 <CascadingValue Value="this">
     @ChildContent
 </CascadingValue>
@@ -31,7 +13,8 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    private ErrorTypes Error { get; set; }
+    private ErrorTypes Error { get; set; } = ErrorTypes.ExistingKey;
+    private bool Display => Error is not ErrorTypes.NotSpecified;
 
     // call StateHasChanged when updating error
     // in case called from component within childcontent.
@@ -46,5 +29,30 @@
     {
         Error = ErrorTypes.NotSpecified;
         StateHasChanged();
+    }
+
+    private string GetErrorMessage()
+    {
+        switch (Error)
+        {
+            case ErrorTypes.ExistingKey:
+                {
+                    return "Error: Entry with that key already exists.";
+                }
+            case ErrorTypes.EmptyKey:
+                {
+                    return "Error: Key cannot be empty.";
+                }
+            case ErrorTypes.EmptyValue:
+                {
+                    return "Error: Value cannot be empty.";
+                }
+            case ErrorTypes.WhiteSpaceInKey:
+                {
+                    return "Error: Key cannot contain whitespace.";
+                }
+            default:
+                return "Error";
+        }
     }
 }
