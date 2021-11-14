@@ -4,11 +4,12 @@ namespace BlazingPostMan.Data.Helpers
 {
     public static class DictionaryExtensions
     {
-        public static bool TryRemove(this Dictionary<string, string> keyValuePairs, string value)
+        #nullable enable
+        public static bool TryRemove(this Dictionary<string, string> keyValuePairs, string? key)
         {
-            if (!string.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(key))
             {
-                return keyValuePairs.Remove(value);
+                return keyValuePairs.Remove(key);
             }
 
             return false;

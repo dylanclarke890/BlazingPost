@@ -6,17 +6,18 @@
     {
         case ErrorTypes.ExistingKey:
             {
-                <p class="text-danger">Error: Entry with that key exists. Would you like to <span class="text-primary hand" @onclick="ConfirmValueUpdate">update</span> it?<span class="text-dark hand" @onclick="ClearError"> X</span></p>
+                <p class="text-danger">Error: Entry with that key exists. Would you like to 
+                    <span class="text-primary hand" @onclick="ConfirmValueUpdate">update it?</span><span class="text-dark hand" @onclick="ClearError"> X</span></p>
                 break;
             }
         case ErrorTypes.EmptyKey:
             {
-                <p class="text-danger">Error: Entry key cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
+                <p class="text-danger">Error: Key cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
                 break;
             }
         case ErrorTypes.EmptyValue:
             {
-                <p class="text-danger">Error: Entry value cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
+                <p class="text-danger">Error: Value cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
                 break;
             }
         case ErrorTypes.WhiteSpaceInKey:
@@ -92,27 +93,30 @@
 
     private bool Editing = false;
 
-    private async Task AddValue()
+    /// <returns>True if key/value pair was successfully added.</returns>
+    private async Task<bool> AddValue()
     {
         if (!Validation())
         {
-            return;
+            return false;
         }
 
         var success = KeyValuePairs.TryAdd(NewKey, NewValue);
         if (success)
         {
-            await NotifyParent();
+            await NotifyParent(NewKey, NewValue);
             ClearInputs();
             ClearError();
+            return true;
         }
         else
         {
             ShowError(ErrorTypes.ExistingKey);
         }
+        return false;
     }
 
-    private async Task NotifyParent(string key = "")
+    private async Task NotifyParent(string key, string value)
     {
         string ke = string.IsNullOrEmpty(key) ? NewKey : key;
         await OnAction.InvokeAsync();
@@ -147,8 +151,8 @@
 
     private async Task DeleteValue(string key)
     {
-        KeyValuePairs.Remove(key);
-        await NotifyParent(key);
+        KeyValuePairs.TryRemove(key);
+        await NotifyParent(key, null);
     }
 
     private void EditValue(string key)
@@ -171,13 +175,12 @@
             return;
         }
 
-        KeyValuePairs.Remove(OldKey);
-        KeyValuePairs[NewKey] = NewValue;
+        // Get rid of the old key first - easier than checking if it's changed.
+        await DeleteValue(OldKey);
 
-        ClearInputs();
-        Editing = false;
-
-        await NotifyParent();
+        // Then add new one as normal.
+        var result = await AddValue();
+        Editing = !result;
     }
 
     private async Task ConfirmValueUpdate()
