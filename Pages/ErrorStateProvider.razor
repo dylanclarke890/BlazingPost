@@ -13,7 +13,7 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    private ErrorTypes Error { get; set; } = ErrorTypes.ExistingKey;
+    private ErrorTypes Error { get; set; }
     private bool Display => Error is not ErrorTypes.NotSpecified;
 
     // call StateHasChanged when updating error
