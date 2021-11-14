@@ -112,10 +112,10 @@
         }
     }
 
-    private async Task NotifyParent()
+    private async Task NotifyParent(string key = "")
     {
         await OnAction.InvokeAsync();
-        if (MonitorKeys.Any(key => key == NewKey))
+        if (MonitorKeys.Any(k => k == (string.IsNullOrEmpty(key) ? NewKey : key)))
         {
             await OnMonitoredKeyActioned.InvokeAsync(new(NewKey, NewValue));
         }
@@ -147,7 +147,7 @@
     private async Task DeleteValue(string key)
     {
         KeyValuePairs.Remove(key);
-        await OnAction.InvokeAsync();
+        await NotifyParent(key);
     }
 
     private void EditValue(string key)
@@ -176,7 +176,7 @@
         ClearInputs();
         Editing = false;
 
-        await OnAction.InvokeAsync();
+        await NotifyParent();
     }
 
     private async Task ConfirmValueUpdate()

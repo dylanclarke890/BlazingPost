@@ -43,7 +43,7 @@
                         WhiteSpaceAllowedInKey="false" MonitorKeys="HeaderKeysToNotifyOf" OnMonitoredKeyActioned="HandleKeyValueUpdate" />
     </TabChild>
     <TabChild Title="Authorisation">
-        <Authorisation AuthorisationData="AuthorisationData" OnAuthorisationUpdated="(a) => AuthorisationData = a"/>
+        <Authorisation AuthorisationData="AuthorisationData" OnAuthorisationUpdated="HandleAuthUpdate"/>
     </TabChild>
 </TabSet>
 
@@ -56,7 +56,7 @@
     private List<string> HeaderKeysToNotifyOf = new() { "ApiKey", "Bearer" };
     private List<string> QueryKeysToNotifyOf = new() { "ApiKey", "Bearer" };
     private Body RequestBody;
-    private AuthorisationData AuthorisationData;
+    private AuthorisationData AuthorisationData = new();
 
     private string requestResult;
 
@@ -85,6 +85,74 @@
                 AuthorisationData.AuthorisationType = AuthorisationType.BearerToken;
                 AuthorisationData.BearerToken = keyValue.Value;
                 break;
+            default:
+                break;
+        }
+    }
+
+    private bool EmptyOrNullApiKey(AuthorisationData authorisationData) =>
+        string.IsNullOrEmpty(authorisationData.Key) || string.IsNullOrEmpty(authorisationData.Value);
+
+    private void HandleAuthUpdate(AuthorisationData authorisationData)
+    {
+        if (authorisationData.AuthorisationType == AuthorisationType.NoAuth)
+        {
+            RemoveExistingAuthFromSection(Section.Authorisation);
+            return;
+        }
+
+        if (authorisationData.RelatedSection == Section.Params && !EmptyOrNullApiKey(authorisationData))
+        {
+            RemoveExistingAuthFromSection(Section.Headers);
+            Params.TryAdd(authorisationData.Key, authorisationData.Value);
+        }
+        else if (authorisationData.RelatedSection == Section.Headers && !EmptyOrNullApiKey(authorisationData))
+        {
+            RemoveExistingAuthFromSection(Section.Params);
+            Headers.TryAdd(authorisationData.Key, authorisationData.Value);
+        }
+        else if (authorisationData.RelatedSection == Section.Headers && !string.IsNullOrEmpty(authorisationData.BearerToken))
+        {
+            RemoveExistingAuthFromSection(Section.Params);
+            Headers.TryAdd("BearerToken", authorisationData.BearerToken);
+        }
+
+        AuthorisationData = authorisationData;
+    }
+
+    private void RemoveExistingAuthFromSection(Section section)
+    {
+        switch (section)
+        {
+            case Section.Params:
+
+                if (AuthorisationData?.Key != null)
+                {
+                    Params.Remove(AuthorisationData?.Key);
+                }
+                break;
+
+            case Section.Headers:
+
+                if (AuthorisationData?.Key != null)
+                {
+                    Headers.Remove(AuthorisationData?.Key);
+                }
+                Headers.Remove("BearerToken");
+
+                break;
+
+            case Section.Authorisation:
+
+                if (AuthorisationData?.Key != null)
+                {
+                    Params.Remove(AuthorisationData?.Key);
+                    Headers.Remove(AuthorisationData?.Key);
+                }
+                Headers.Remove("BearerToken");
+                
+                break;
+
             default:
                 break;
         }

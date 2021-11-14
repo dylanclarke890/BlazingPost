@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col-3">
             <label>Please select an auth type:</label>
-            <select @bind="AuthorisationData.AuthorisationType">
+            <select @bind="AuthorisationData.AuthorisationType" @onblur="HandleAuthTypeSelected">
                 <option value="@AuthorisationType.NoAuth">@AuthorisationType.NoAuth</option>
                 <option value="@AuthorisationType.ApiKey">@AuthorisationType.ApiKey</option>
                 <option value="@AuthorisationType.BearerToken">@AuthorisationType.BearerToken</option>
@@ -15,14 +15,14 @@
             {
                 <div class="form-group row">
                     <label class="col-2 col-form-label" for="api-key-input">Key: </label>
-                    <input class="col-10 form-control" id="api-key-input" type="text" @bind="AuthorisationData.Key" />
+                    <input class="col-10 form-control" id="api-key-input" type="text" @bind="AuthorisationData.Key" @onblur="HandleApiKey" />
                 </div>
                 <div class="form-group row">
                     <label class="col-2 col-form-label" for="api-value-input">Value: </label>
-                    <input class="col-10 form-control" id="api-value-input" type="text" @bind="AuthorisationData.Value" />
+                    <input class="col-10 form-control" id="api-value-input" type="text" @bind="AuthorisationData.Value" @onblur="HandleApiKey" />
                 </div>
                 <label>Add To:</label>
-                <select @bind="AuthorisationData.RelatedSection">
+                <select @bind="AuthorisationData.RelatedSection" @onblur="async () => await OnAuthorisationUpdated.InvokeAsync(AuthorisationData)">
                     <option value="@Section.Params">Query Params</option>
                     <option value="@Section.Headers">@Section.Headers</option>
                 </select>
@@ -31,7 +31,7 @@
             {
                 <div class="form-group row">
                     <label class="col-2 col-form-label" for="bearer-token-input">Bearer: </label>
-                    <input class="col-10 form-control" id="bearer-token-input" type="text" @bind="AuthorisationData.BearerToken" />
+                    <input class="col-10 form-control" id="bearer-token-input" type="text" @bind="AuthorisationData.BearerToken" @onblur="HandleBearerToken" />
                 </div>
             }
         </div>
@@ -48,5 +48,52 @@
     protected override void OnParametersSet()
     {
         AuthorisationData ??= new() { RelatedSection = Section.Params };
+    }
+
+    private bool EmptyOrNullApiKey() => string.IsNullOrEmpty(AuthorisationData?.Key) || string.IsNullOrEmpty(AuthorisationData?.Value);
+    private bool EmptyOrNullBearerToken() => string.IsNullOrEmpty(AuthorisationData?.BearerToken);
+
+    private async Task HandleApiKey()
+    {
+        if (!EmptyOrNullApiKey())
+        {
+            await OnAuthorisationUpdated.InvokeAsync(AuthorisationData);
+        }
+    }
+
+    private async Task HandleBearerToken()
+    {
+        if (!EmptyOrNullBearerToken())
+        {
+            AuthorisationData.RelatedSection = Section.Headers;
+            await OnAuthorisationUpdated.InvokeAsync(AuthorisationData);
+        }
+    }
+
+    private async Task HandleAuthTypeSelected()
+    {
+        if (AuthorisationData.AuthorisationType == AuthorisationType.NoAuth)
+        {
+            await OnAuthorisationUpdated.InvokeAsync(AuthorisationData);
+        }
+        else if (AuthorisationData.AuthorisationType == AuthorisationType.ApiKey)
+        {
+            await HandleApiKey();
+        }
+        else if (AuthorisationData.AuthorisationType == AuthorisationType.BearerToken)
+        {
+            await HandleBearerToken();
+        }
+    }
+
+    private void ClearBearerData()
+    {
+        AuthorisationData.BearerToken = null;
+    }
+
+    private void ClearApiKeyData()
+    {
+        AuthorisationData.Key = null;
+        AuthorisationData.Value = null;
     }
 }
