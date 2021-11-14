@@ -1,35 +1,5 @@
 ﻿<h4>@Title</h4>
 
-@if (Error)
-{
-    switch (ErrorType)
-    {
-        case ErrorTypes.ExistingKey:
-            {
-                <p class="text-danger">Error: Entry with that key exists. Would you like to 
-                    <span class="text-primary hand" @onclick="ConfirmValueUpdate">update it?</span><span class="text-dark hand" @onclick="ClearError"> X</span></p>
-                break;
-            }
-        case ErrorTypes.EmptyKey:
-            {
-                <p class="text-danger">Error: Key cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
-                break;
-            }
-        case ErrorTypes.EmptyValue:
-            {
-                <p class="text-danger">Error: Value cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
-                break;
-            }
-        case ErrorTypes.WhiteSpaceInKey:
-            {
-                <p class="text-danger">Error: Key cannot contain whitespace. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
-                break;
-            }
-        default:
-            break;
-    }
-}
-
 <table class="table mt-3">
     <tr>
         <th>Key</th>
@@ -64,6 +34,9 @@
 </table>
 
 @code {
+    [CascadingParameter]
+    private ErrorStateProvider ErrorState { get; set; }
+
     [Parameter]
     public string Title { get; set; }
 
@@ -81,9 +54,6 @@
 
     [Parameter]
     public EventCallback<KeyValuePair<string, string>> OnMonitoredKeyActioned { get; set; }
-
-    private ErrorTypes ErrorType;
-    private bool Error = false;
 
     private string NewKey { get; set; }
     private string NewValue { get; set; }
@@ -105,12 +75,12 @@
         {
             await NotifyParent(NewKey, NewValue);
             ClearInputs();
-            ClearError();
+            ErrorState.ClearError();
             return true;
         }
         else
         {
-            ShowError(ErrorTypes.ExistingKey);
+            ErrorState.ShowError(ErrorTypes.ExistingKey);
         }
         return false;
     }
@@ -149,40 +119,27 @@
         Editing = !result;
     }
 
-    private async Task ConfirmValueUpdate()
-    {
-        await UpdateValue();
-        ClearError();
-        ClearInputs();
-    }
-
     private bool Validation(string key, string value)
     {
         if (string.IsNullOrEmpty(key))
         {
-            ShowError(ErrorTypes.EmptyKey);
+            ErrorState.ShowError(ErrorTypes.EmptyKey);
             return false;
         }
 
         if (string.IsNullOrEmpty(value))
         {
-            ShowError(ErrorTypes.EmptyValue);
+            ErrorState.ShowError(ErrorTypes.EmptyValue);
             return false;
         }
 
         if (!WhiteSpaceAllowedInKey && key.Contains(" "))
         {
-            ShowError(ErrorTypes.WhiteSpaceInKey);
+            ErrorState.ShowError(ErrorTypes.WhiteSpaceInKey);
             return false;
         }
 
         return true;
-    }
-
-    private void ShowError(ErrorTypes errorType)
-    {
-        Error = true;
-        ErrorType = errorType;
     }
 
     private async Task NotifyParent(string key, string value)
@@ -192,12 +149,6 @@
         {
             await OnMonitoredKeyActioned.InvokeAsync(new(key, value));
         }
-    }
-
-    private void ClearError()
-    {
-        Error = false;
-        ErrorType = ErrorTypes.NotSpecified;
     }
 
     private void ClearInputs()

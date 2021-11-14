@@ -29,37 +29,45 @@
     <h3>Result:</h3>
     <div>@requestResult</div>
 </div>
-
-<TabSet>
-    <TabChild Title="Params">
-        <KeyValuesTable Title="Add Parameters" KeyValuePairs="Params" OnAction="StateHasChanged"
-                        WhiteSpaceAllowedInKey="true" MonitorKeys="KeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
-    </TabChild>
-    <TabChild Title="Body">
-        <BodyContent Body="RequestBody" OnBodyUpdated="(b) => RequestBody = b"/>
-    </TabChild>
-    <TabChild Title="Headers">
-        <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged" 
-                        WhiteSpaceAllowedInKey="false" MonitorKeys="KeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
-    </TabChild>
-    <TabChild Title="Authorisation">
-        <Authorisation AuthorisationData="AuthorisationData" OnAuthorisationUpdated="HandleAuthUpdate"/>
-    </TabChild>
-</TabSet>
+<ErrorStateProvider>
+    <TabSet>
+        <TabChild Title="Params">
+            <KeyValuesTable Title="Add Parameters" KeyValuePairs="Params" OnAction="StateHasChanged"
+                            WhiteSpaceAllowedInKey="true" MonitorKeys="KeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
+        </TabChild>
+        <TabChild Title="Body">
+            <BodyContent Body="RequestBody" OnBodyUpdated="(b) => RequestBody = b"/>
+        </TabChild>
+        <TabChild Title="Headers">
+            <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged" 
+                            WhiteSpaceAllowedInKey="false" MonitorKeys="KeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
+        </TabChild>
+        <TabChild Title="Authorisation">
+            <Authorisation AuthorisationData="AuthorisationData" OnAuthorisationUpdated="HandleAuthUpdate"/>
+        </TabChild>
+    </TabSet>
+</ErrorStateProvider>
 
 @code {
-    private string Url { get; set; } = "https://localhost:44384/api/testendpoint";
+    private string Url { get; set; }
     private RequestType requestType { get; set; }
-
-    private Dictionary<string, string> Params = new() { ["test key"] = "this is a test val" };
-    private Dictionary<string, string> Headers = new() { ["key"] = "this is a test val" };
-    private List<string> KeysToNotifyOf = new() { "ApiKey", "Authorisation", "Authorization" };
+    private Dictionary<string, string> Params;
+    private Dictionary<string, string> Headers;
+    private List<string> KeysToNotifyOf;
     private Body RequestBody;
-    private AuthorisationData AuthorisationData = new();
-
+    private AuthorisationData AuthorisationData;
+    private bool sending;
     private string requestResult;
 
-    private bool sending = false;
+    protected override void OnInitialized()
+    {
+        Url ??= "https://localhost:44384/api/testendpoint";
+        Params ??= new() { ["test key"] = "this is a test val" };
+        Headers ??= new() { ["key"] = "this is a test val" };
+        KeysToNotifyOf ??= new() { "ApiKey", "Authorisation", "Authorization" };
+        RequestBody ??= new();
+        AuthorisationData ??= new();
+    }
 
     private async Task SendRequest()
     {
@@ -137,31 +145,6 @@
         Params.TryRemove(AuthorisationData?.Key);
         Headers.TryRemove(AuthorisationData?.Key);
         Headers.TryRemove("Authorisation");
-        /*switch (section)
-        {
-            case Section.Params:
-
-                Params.TryRemove(AuthorisationData?.Key);
-                break;
-
-            case Section.Headers:
-
-                Headers.TryRemove(AuthorisationData?.Key);
-                Headers.TryRemove("Authorisation");
-
-                break;
-
-            case Section.Authorisation:
-
-                Params.TryRemove(AuthorisationData?.Key);
-                Headers.TryRemove(AuthorisationData?.Key);
-                Headers.TryRemove("Authorisation");
-
-                break;
-
-            default:
-                break;
-        }*/
     }
 }
 

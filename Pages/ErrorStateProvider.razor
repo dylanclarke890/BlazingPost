@@ -1,0 +1,50 @@
+﻿@switch (Error)
+{
+    case ErrorTypes.ExistingKey:
+        {
+            <p class="text-danger">Error: Entry with that key exists. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
+            break;
+        }
+    case ErrorTypes.EmptyKey:
+        {
+            <p class="text-danger">Error: Key cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
+            break;
+        }
+    case ErrorTypes.EmptyValue:
+        {
+            <p class="text-danger">Error: Value cannot be empty. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
+            break;
+        }
+    case ErrorTypes.WhiteSpaceInKey:
+        {
+            <p class="text-danger">Error: Key cannot contain whitespace. <span class="text-dark hand" @onclick="ClearError"> X</span></p>
+            break;
+        }
+    default:
+        break;
+}
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private ErrorTypes Error { get; set; }
+
+    // call StateHasChanged when updating error
+    // in case called from component within childcontent.
+
+    public void ShowError(ErrorTypes error)
+    {
+        Error = error;
+        StateHasChanged();
+    }
+
+    public void ClearError()
+    {
+        Error = ErrorTypes.NotSpecified;
+        StateHasChanged();
+    }
+}
