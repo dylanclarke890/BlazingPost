@@ -134,30 +134,21 @@
         {
             case Section.Params:
 
-                if (AuthorisationData?.Key != null)
-                {
-                    Params.Remove(AuthorisationData?.Key);
-                }
+                Params.TryRemove(AuthorisationData?.Key);
                 break;
 
             case Section.Headers:
 
-                if (AuthorisationData?.Key != null)
-                {
-                    Headers.Remove(AuthorisationData?.Key);
-                }
-                Headers.Remove("Authorisation");
+                Headers.TryRemove(AuthorisationData?.Key);
+                Headers.TryRemove("Authorisation");
 
                 break;
 
             case Section.Authorisation:
 
-                if (AuthorisationData?.Key != null)
-                {
-                    Params.Remove(AuthorisationData?.Key);
-                    Headers.Remove(AuthorisationData?.Key);
-                }
-                Headers.Remove("Authorisation");
+                Params.TryRemove(AuthorisationData?.Key);
+                Headers.TryRemove(AuthorisationData?.Key);
+                Headers.TryRemove("Authorisation");
 
                 break;
 
