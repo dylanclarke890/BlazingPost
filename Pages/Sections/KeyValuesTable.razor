@@ -114,10 +114,11 @@
 
     private async Task NotifyParent(string key = "")
     {
+        string ke = string.IsNullOrEmpty(key) ? NewKey : key;
         await OnAction.InvokeAsync();
-        if (MonitorKeys.Any(k => k == (string.IsNullOrEmpty(key) ? NewKey : key)))
+        if (MonitorKeys.Any(k => k == ke))
         {
-            await OnMonitoredKeyActioned.InvokeAsync(new(NewKey, NewValue));
+            await OnMonitoredKeyActioned.InvokeAsync(new(ke, NewValue));
         }
     }
 

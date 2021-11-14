@@ -33,14 +33,14 @@
 <TabSet>
     <TabChild Title="Params">
         <KeyValuesTable Title="Add Parameters" KeyValuePairs="Params" OnAction="StateHasChanged"
-                        WhiteSpaceAllowedInKey="true" MonitorKeys="QueryKeysToNotifyOf" OnMonitoredKeyActioned="HandleKeyValueUpdate" />
+                        WhiteSpaceAllowedInKey="true" MonitorKeys="QueryKeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
     </TabChild>
     <TabChild Title="Body">
         <BodyContent Body="RequestBody" OnBodyUpdated="(b) => RequestBody = b"/>
     </TabChild>
     <TabChild Title="Headers">
         <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged" 
-                        WhiteSpaceAllowedInKey="false" MonitorKeys="HeaderKeysToNotifyOf" OnMonitoredKeyActioned="HandleKeyValueUpdate" />
+                        WhiteSpaceAllowedInKey="false" MonitorKeys="HeaderKeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
     </TabChild>
     <TabChild Title="Authorisation">
         <Authorisation AuthorisationData="AuthorisationData" OnAuthorisationUpdated="HandleAuthUpdate"/>
@@ -53,8 +53,8 @@
 
     private Dictionary<string, string> Params = new() { ["test key"] = "this is a test val" };
     private Dictionary<string, string> Headers = new() { ["key"] = "this is a test val" };
-    private List<string> HeaderKeysToNotifyOf = new() { "ApiKey", "Bearer" };
-    private List<string> QueryKeysToNotifyOf = new() { "ApiKey", "Bearer" };
+    private List<string> HeaderKeysToNotifyOf = new() { "ApiKey", "Authorisation", "Authorization" };
+    private List<string> QueryKeysToNotifyOf = new() { "ApiKey", "Authorisation", "Authorization" };
     private Body RequestBody;
     private AuthorisationData AuthorisationData = new();
 
@@ -70,7 +70,7 @@
         sending = false;
     }
 
-    private void HandleKeyValueUpdate(KeyValuePair<string, string> keyValue)
+    private void HandleMonitoredKeyValue(KeyValuePair<string, string> keyValue)
     {
         switch (keyValue.Key)
         {
@@ -80,10 +80,18 @@
                 AuthorisationData.Key = keyValue.Key;
                 AuthorisationData.Value = keyValue.Value;
                 break;
-            case "Bearer":
+            case "Authorisation":
                 AuthorisationData ??= new();
                 AuthorisationData.AuthorisationType = AuthorisationType.BearerToken;
-                AuthorisationData.BearerToken = keyValue.Value;
+
+                if (AuthorisationData.RelatedSection is Section.Headers && keyValue.Value == null)
+                {
+                    RemoveExistingAuthFromSection(Section.Headers);
+                }
+                else
+                {
+                    AuthorisationData.BearerToken = keyValue.Value;
+                }
                 break;
             default:
                 break;
@@ -114,7 +122,7 @@
         else if (authorisationData.RelatedSection == Section.Headers && !string.IsNullOrEmpty(authorisationData.BearerToken))
         {
             RemoveExistingAuthFromSection(Section.Params);
-            Headers.TryAdd("BearerToken", authorisationData.BearerToken);
+            Headers.TryAdd("Authorisation", authorisationData.BearerToken);
         }
 
         AuthorisationData = authorisationData;
@@ -138,7 +146,7 @@
                 {
                     Headers.Remove(AuthorisationData?.Key);
                 }
-                Headers.Remove("BearerToken");
+                Headers.Remove("Authorisation");
 
                 break;
 
@@ -149,8 +157,8 @@
                     Params.Remove(AuthorisationData?.Key);
                     Headers.Remove(AuthorisationData?.Key);
                 }
-                Headers.Remove("BearerToken");
-                
+                Headers.Remove("Authorisation");
+
                 break;
 
             default:
