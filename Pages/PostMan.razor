@@ -33,14 +33,14 @@
 <TabSet>
     <TabChild Title="Params">
         <KeyValuesTable Title="Add Parameters" KeyValuePairs="Params" OnAction="StateHasChanged"
-                        WhiteSpaceAllowedInKey="true" MonitorKeys="QueryKeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
+                        WhiteSpaceAllowedInKey="true" MonitorKeys="KeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
     </TabChild>
     <TabChild Title="Body">
         <BodyContent Body="RequestBody" OnBodyUpdated="(b) => RequestBody = b"/>
     </TabChild>
     <TabChild Title="Headers">
         <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged" 
-                        WhiteSpaceAllowedInKey="false" MonitorKeys="HeaderKeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
+                        WhiteSpaceAllowedInKey="false" MonitorKeys="KeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
     </TabChild>
     <TabChild Title="Authorisation">
         <Authorisation AuthorisationData="AuthorisationData" OnAuthorisationUpdated="HandleAuthUpdate"/>
@@ -53,8 +53,7 @@
 
     private Dictionary<string, string> Params = new() { ["test key"] = "this is a test val" };
     private Dictionary<string, string> Headers = new() { ["key"] = "this is a test val" };
-    private List<string> HeaderKeysToNotifyOf = new() { "ApiKey", "Authorisation", "Authorization" };
-    private List<string> QueryKeysToNotifyOf = new() { "ApiKey", "Authorisation", "Authorization" };
+    private List<string> KeysToNotifyOf = new() { "ApiKey", "Authorisation", "Authorization" };
     private Body RequestBody;
     private AuthorisationData AuthorisationData = new();
 
@@ -68,6 +67,11 @@
         var result = await requestProcessor.ProcessRequest(new(Url, requestType, Params, Headers, RequestBody, AuthorisationData));
         await HandleContent(result);
         sending = false;
+    }
+
+    private async Task HandleContent(HttpResponseMessage response)
+    {
+        requestResult = await response.Content.ReadAsStringAsync();
     }
 
     private void HandleMonitoredKeyValue(KeyValuePair<string, string> keyValue)
@@ -130,7 +134,10 @@
 
     private void RemoveExistingAuthFromSection(Section section)
     {
-        switch (section)
+        Params.TryRemove(AuthorisationData?.Key);
+        Headers.TryRemove(AuthorisationData?.Key);
+        Headers.TryRemove("Authorisation");
+        /*switch (section)
         {
             case Section.Params:
 
@@ -154,12 +161,7 @@
 
             default:
                 break;
-        }
-    }
-
-    private async Task HandleContent(HttpResponseMessage response)
-    {
-        requestResult = await response.Content.ReadAsStringAsync();
+        }*/
     }
 }
 

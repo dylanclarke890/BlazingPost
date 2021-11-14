@@ -82,21 +82,20 @@
     [Parameter]
     public EventCallback<KeyValuePair<string, string>> OnMonitoredKeyActioned { get; set; }
 
+    private ErrorTypes ErrorType;
+    private bool Error = false;
+
     private string NewKey { get; set; }
     private string NewValue { get; set; }
-
     private string OldKey;
     private string OldValue;
-
-    private bool Error = false;
-    private ErrorTypes ErrorType;
 
     private bool Editing = false;
 
     /// <returns>True if key/value pair was successfully added.</returns>
     private async Task<bool> AddValue()
     {
-        if (!Validation())
+        if (!Validation(NewKey, NewValue))
         {
             return false;
         }
@@ -114,39 +113,6 @@
             ShowError(ErrorTypes.ExistingKey);
         }
         return false;
-    }
-
-    private async Task NotifyParent(string key, string value)
-    {
-        string ke = string.IsNullOrEmpty(key) ? NewKey : key;
-        await OnAction.InvokeAsync();
-        if (MonitorKeys.Any(k => k == ke))
-        {
-            await OnMonitoredKeyActioned.InvokeAsync(new(ke, NewValue));
-        }
-    }
-
-    private bool Validation()
-    {
-        if (string.IsNullOrEmpty(NewKey))
-        {
-            ShowError(ErrorTypes.EmptyKey);
-            return false;
-        }
-
-        if (string.IsNullOrEmpty(NewValue))
-        {
-            ShowError(ErrorTypes.EmptyValue);
-            return false;
-        }
-
-        if (!WhiteSpaceAllowedInKey && NewKey.Contains(" "))
-        {
-            ShowError(ErrorTypes.WhiteSpaceInKey);
-            return false;
-        }
-
-        return true;
     }
 
     private async Task DeleteValue(string key)
@@ -169,13 +135,13 @@
 
     private async Task UpdateValue()
     {
-        if (string.IsNullOrEmpty(NewValue))
+        // Calling this twice now (again in add) but needs to run before we delete the old key.
+        if (!Validation(NewKey, NewValue))
         {
-            ShowError(ErrorTypes.EmptyValue);
             return;
         }
 
-        // Get rid of the old key first - easier than checking if it's changed.
+        // Get rid of the old key/value first - easier than checking if it's changed.
         await DeleteValue(OldKey);
 
         // Then add new one as normal.
@@ -190,10 +156,42 @@
         ClearInputs();
     }
 
+    private bool Validation(string key, string value)
+    {
+        if (string.IsNullOrEmpty(key))
+        {
+            ShowError(ErrorTypes.EmptyKey);
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(value))
+        {
+            ShowError(ErrorTypes.EmptyValue);
+            return false;
+        }
+
+        if (!WhiteSpaceAllowedInKey && key.Contains(" "))
+        {
+            ShowError(ErrorTypes.WhiteSpaceInKey);
+            return false;
+        }
+
+        return true;
+    }
+
     private void ShowError(ErrorTypes errorType)
     {
         Error = true;
         ErrorType = errorType;
+    }
+
+    private async Task NotifyParent(string key, string value)
+    {
+        await OnAction.InvokeAsync();
+        if (MonitorKeys.Any(k => k == key))
+        {
+            await OnMonitoredKeyActioned.InvokeAsync(new(key, value));
+        }
     }
 
     private void ClearError()
