@@ -1,9 +1,8 @@
-﻿using BlazingPostMan.Data.Enums;
-using BlazingPostMan.Data.Models;
+﻿using BlazingPostMan.Data.Models;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace BlazingPostMan.Services
+namespace BlazingPostMan.Services.HttpRequests
 {
     public interface IRequestProcessor
     {

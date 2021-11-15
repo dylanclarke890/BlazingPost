@@ -10,7 +10,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlazingPostMan.Services
+namespace BlazingPostMan.Services.HttpRequests
 {
     public class RequestProcessor : IRequestProcessor
     {

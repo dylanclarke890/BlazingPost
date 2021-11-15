@@ -19,16 +19,18 @@
     </select>
 </div>
 
-<div class="mt-3 mb-3">
-    <h3>Preview: </h3> <span>@requestType @UrlHelper.GetUrl(Url, Params)</span><br />
+<div class="d-flex mb-3">
+    <button class="btn btn-primary mr-3" @onclick="SendRequest" disabled="@sending">Send <i class="fas fa-paper-plane"></i></button>
+    <input type="text" class="form-control w-75" readonly value="@($"{requestType} {UrlHelper.GetUrl(Url, Params)}")">
 </div>
 
-<button class="btn btn-primary" @onclick="SendRequest" disabled="@sending">Send</button>
-
-<div class="mt-3 mb-3">
-    <h3>Result:</h3>
-    <div>@requestResult</div>
-</div>
+@if (requestResult is not null)
+{
+    <div class="mt-3 mb-3">
+        <h3>Result:</h3>
+        <div>@requestResult</div>
+    </div>
+}
 <ErrorStateProvider>
     <TabSet>
         <TabChild Title="Params">
@@ -36,14 +38,14 @@
                             WhiteSpaceAllowedInKey="true" MonitorKeys="KeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
         </TabChild>
         <TabChild Title="Body">
-            <BodyContent Body="RequestBody" OnBodyUpdated="(b) => RequestBody = b"/>
+            <BodyContent Body="RequestBody" OnBodyUpdated="(b) => RequestBody = b" />
         </TabChild>
         <TabChild Title="Headers">
-            <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged" 
+            <KeyValuesTable Title="Add Headers" KeyValuePairs="Headers" OnAction="StateHasChanged"
                             WhiteSpaceAllowedInKey="false" MonitorKeys="KeysToNotifyOf" OnMonitoredKeyActioned="HandleMonitoredKeyValue" />
         </TabChild>
         <TabChild Title="Authorisation">
-            <Authorisation AuthorisationData="AuthorisationData" OnAuthorisationUpdated="HandleAuthUpdate"/>
+            <Authorisation AuthorisationData="AuthorisationData" OnAuthorisationUpdated="HandleAuthUpdate" />
         </TabChild>
     </TabSet>
 </ErrorStateProvider>

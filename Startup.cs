@@ -1,4 +1,5 @@
-using BlazingPostMan.Services;
+using BlazingPostMan.Services.HttpRequests;
+using BlazingPostMan.Services.StrBuilder;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -25,8 +26,9 @@ namespace BlazingPostMan
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IRequestProcessor, RequestProcessor>();
+            services.AddScoped<IStringBuilderService, StringBuilderService>();
 
-            services.AddControllers(opt => opt.AllowEmptyInputInBodyModelBinding = true);
+            services.AddControllers();
             services.AddRazorPages();
             services.AddServerSideBlazor();
 

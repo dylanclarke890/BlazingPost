@@ -1,4 +1,5 @@
 ﻿using BlazingPostMan.Data.Enums;
+using BlazingPostMan.Services.StrBuilder;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.IO;
@@ -11,6 +12,13 @@ namespace BlazingPostMan.Controllers
     [ApiController]
     public class TestEndpointController : ControllerBase
     {
+        private readonly IStringBuilderService _sbService;
+
+        public TestEndpointController(IStringBuilderService stringBuilderService)
+        {
+            _sbService = stringBuilderService;
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post()
         {
@@ -36,39 +44,37 @@ namespace BlazingPostMan.Controllers
         }
         private async Task<IActionResult> ProcessRequest(RequestType requestType)
         {
-            string content = "";
+            _sbService.Add($"Testing {requestType}. ");
+
             if (!StringContentRequest())
             {
                 if (Request.Form.Files.Any())
                 {
-                    content += $"{Request.Form.Files.Count} Files";
+                    _sbService.Add($"{Request.Form.Files.Count} Files. ");
                 }
             }
 
-            content += $"{Request.Headers.Count} Headers";
+            _sbService.Add($"With Headers: ");
 
             foreach (var header in Request.Headers)
             {
-                content += $"{header.Key}, {header.Value}";
+                _sbService.Add($"{header.Key}: {header.Value}, ");
             }
 
-            return await OkWithBody(content, requestType);
+            return await OkWithBody();
         }
         private bool StringContentRequest()
         {
             return Request.ContentType == "application/json; charset=utf-8";
         }
 
-        private async Task<IActionResult> OkWithBody(string content, RequestType requestType)
+        private async Task<IActionResult> OkWithBody()
         {
-            string contentToReturn = $"Testing {requestType}";
             var bodyContent = JsonConvert.DeserializeObject<string>(await new StreamReader(Request.Body).ReadToEndAsync());
-            if (!string.IsNullOrEmpty(bodyContent))
-            {
-                contentToReturn += $"Body: {bodyContent}";
-            }
+            bodyContent ??= "None";
+            _sbService.Add($"Body: {bodyContent} ");
 
-            return Ok($"{contentToReturn} {content}");
+            return Ok(_sbService.Get());
         }
     }
 }
