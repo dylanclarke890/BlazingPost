@@ -15,11 +15,11 @@
             {
                 <div class="form-group row">
                     <label class="col-2 col-form-label" for="api-key-input">Key: </label>
-                    <input class="col-10 form-control" id="api-key-input" type="text" @bind="AuthorisationData.Key" @onblur="HandleApiKey" />
+                    <input class="col-10 form-control" id="api-key-input" type="text" autocomplete="off" @bind="AuthorisationData.Key" @onblur="HandleApiKey" />
                 </div>
                 <div class="form-group row">
                     <label class="col-2 col-form-label" for="api-value-input">Value: </label>
-                    <input class="col-10 form-control" id="api-value-input" type="text" @bind="AuthorisationData.Value" @onblur="HandleApiKey" />
+                    <input class="col-10 form-control" id="api-value-input" type="text" autocomplete="off" @bind="AuthorisationData.Value" @onblur="HandleApiKey" />
                 </div>
                 <label>Add To:</label>
                 <select @bind="AuthorisationData.RelatedSection" @onblur="async () => await OnAuthorisationUpdated.InvokeAsync(AuthorisationData)">
