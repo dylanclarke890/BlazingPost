@@ -57,7 +57,7 @@
     {
         if (!EmptyOrNullApiKey())
         {
-            await OnAuthorisationUpdated.InvokeAsync(AuthorisationData);
+            await NotifyParent();
         }
     }
 
@@ -66,15 +66,20 @@
         if (!EmptyOrNullBearerToken())
         {
             AuthorisationData.RelatedSection = Section.Headers;
-            await OnAuthorisationUpdated.InvokeAsync(AuthorisationData);
+            await NotifyParent();
         }
+    }
+
+    private async Task NotifyParent()
+    {
+        await OnAuthorisationUpdated.InvokeAsync(AuthorisationData);
     }
 
     private async Task HandleAuthTypeSelected()
     {
         if (AuthorisationData.AuthorisationType is AuthorisationType.NoAuth)
         {
-            await OnAuthorisationUpdated.InvokeAsync(AuthorisationData);
+            await NotifyParent();
         }
         else if (AuthorisationData.AuthorisationType is AuthorisationType.ApiKey)
         {
