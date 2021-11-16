@@ -46,7 +46,7 @@ namespace BlazingPostMan.Controllers
         {
             _sbService.Add($"Testing {requestType}. ");
 
-            if (!StringContentRequest())
+            if (!StringContentRequest() && Request.ContentType != null)
             {
                 if (Request.Form.Files.Any())
                 {
