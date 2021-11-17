@@ -70,9 +70,12 @@ namespace BlazingPostMan.Controllers
 
         private async Task<IActionResult> OkWithBody()
         {
-            var bodyContent = JsonConvert.DeserializeObject<string>(await new StreamReader(Request.Body).ReadToEndAsync());
-            bodyContent ??= "None";
-            _sbService.Add($"Body: {bodyContent} ");
+            if (Request.Body != null)
+            {
+                var bodyContent = JsonConvert.DeserializeObject<string>(await new StreamReader(Request.Body).ReadToEndAsync());
+                bodyContent ??= "None";
+                _sbService.Add($"Body: {bodyContent} ");
+            }
 
             return Ok(_sbService.Get());
         }
