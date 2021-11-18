@@ -8,7 +8,7 @@
     </tr>
     @foreach (var keyValue in KeyValuePairs)
     {
-        <tr>
+        <tr @key="keyValue.Key">
             <td>@keyValue.Key</td>
             <td>@keyValue.Value</td>
             <th>
