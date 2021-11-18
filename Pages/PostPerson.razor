@@ -1,0 +1,37 @@
+﻿@page "/post-person"
+@inject IRequestDataManager _requestDataManager
+
+<h3>PostPerson</h3>
+
+<div class="form-group row">
+    <label class="col-auto col-form-label" for="url-input">Enter a URL: </label>
+    <input class="col-10 form-control" id="url-input" type="text" @bind="model.Url" />
+</div>
+
+<div class="form-group">
+    <label>Request Type: </label>
+    <select @bind="model.RequestType">
+        <option value="@RequestType.POST">@RequestType.POST</option>
+        <option value="@RequestType.GET">@RequestType.GET</option>
+        <option value="@RequestType.PUT">@RequestType.PUT</option>
+        <option value="@RequestType.DELETE">@RequestType.DELETE</option>
+    </select>
+</div>
+<button @onclick="() => _requestDataManager.SaveRequest()">
+    Add
+</button>
+<button @onclick="() => _requestDataManager.SaveRequest(true)">
+    add and clear
+</button>
+<button @onclick="() => _requestDataManager.PrintPastRequests()">
+    print
+</button>
+
+@code {
+    private Request model;
+
+    protected override void OnInitialized()
+    {
+        model = _requestDataManager.GetRequest();
+    }
+}

@@ -7,7 +7,10 @@ namespace BlazingPostMan.Data.Models
     {
         public Request()
         {
-
+            UrlParameters = new();
+            Headers = new();
+            AuthData = new();
+            RequestBody = new();
         }
 
         public Request(string url, RequestType requestType, 
@@ -19,7 +22,7 @@ namespace BlazingPostMan.Data.Models
             UrlParameters = urlParams;
             Headers = headers;
             RequestBody = body;
-            AuthorizationData = authorizationData;
+            AuthData = authorizationData;
         }
 
         public string Url { get; set; }
@@ -30,7 +33,7 @@ namespace BlazingPostMan.Data.Models
 
         public Dictionary<string, string> Headers { get; set; }
 
-        public AuthorisationData AuthorizationData { get; set; }
+        public AuthorisationData AuthData { get; set; }
 
         public Body RequestBody { get; set; }
     }

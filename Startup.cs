@@ -1,3 +1,4 @@
+using BlazingPostMan.Services.DataManager;
 using BlazingPostMan.Services.HttpRequests;
 using BlazingPostMan.Services.StrBuilder;
 using Microsoft.AspNetCore.Builder;
@@ -26,6 +27,7 @@ namespace BlazingPostMan
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IRequestProcessor, RequestProcessor>();
+            services.AddScoped<IRequestDataManager, RequestDataManager>();
             services.AddScoped<IStringBuilderService, StringBuilderService>();
 
             services.AddControllers();
