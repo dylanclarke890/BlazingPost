@@ -10,9 +10,11 @@ namespace BlazingPostMan.Services.DataManager
         public RequestDataManager()
         {
             PastRequests ??= new();
+            UndoneRequests ??= new();
         }
 
         private List<Request> PastRequests { get; set; }
+        private List<Request> UndoneRequests { get; set; }
 
         public Request GetLastRequest()
         {
@@ -22,6 +24,17 @@ namespace BlazingPostMan.Services.DataManager
         public void SaveRequest(Request request)
         {
             PastRequests.Add(request.Clone());
+            UndoneRequests = new();
+        }
+
+        public Request Undo()
+        {
+            var removedRequest = PastRequests.Last();
+
+            UndoneRequests.Add(removedRequest);
+            PastRequests.Remove(removedRequest);
+
+            return GetLastRequest();
         }
 
         public void PrintPastRequests()
