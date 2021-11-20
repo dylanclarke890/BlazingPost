@@ -3,6 +3,7 @@
 
 <h3>PostPerson</h3>
 
+
 <div class="form-group row">
     <label class="col-auto col-form-label" for="url-input">Enter a URL: </label>
     <input class="col-10 form-control" id="url-input" type="text" @bind="model.Url" />
@@ -17,10 +18,10 @@
         <option value="@RequestType.DELETE">@RequestType.DELETE</option>
     </select>
 </div>
-<button @onclick="() => _requestDataManager.SaveRequest()">
+<button @onclick="() => SaveRequest(false)">
     Add
 </button>
-<button @onclick="() => _requestDataManager.SaveRequest(true)">
+<button @onclick="() => SaveRequest(true)">
     add and clear
 </button>
 <button @onclick="() => _requestDataManager.PrintPastRequests()">
@@ -32,6 +33,15 @@
 
     protected override void OnInitialized()
     {
-        model = _requestDataManager.GetRequest();
+        model = _requestDataManager.GetLastRequest();
+    }
+
+    private void SaveRequest(bool clear)
+    {
+        _requestDataManager.SaveRequest(model);
+        if (clear)
+        {
+            model = new();
+        }
     }
 }

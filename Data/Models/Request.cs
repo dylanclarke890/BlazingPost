@@ -1,9 +1,10 @@
 ﻿using BlazingPostMan.Data.Enums;
+using BlazingPostMan.Generics;
 using System.Collections.Generic;
 
 namespace BlazingPostMan.Data.Models
 {
-    public class Request
+    public class Request : ICloneable<Request>
     {
         public Request()
         {
@@ -36,5 +37,19 @@ namespace BlazingPostMan.Data.Models
         public AuthorisationData AuthData { get; set; }
 
         public Body RequestBody { get; set; }
+
+        public Request Clone()
+        {
+            var obj = new Request
+            {
+                Url = Url,
+                RequestType = RequestType,
+                UrlParameters = UrlParameters,
+                Headers = Headers,
+                RequestBody = RequestBody,
+                AuthData = AuthData
+            };
+            return obj;
+        }
     }
 }

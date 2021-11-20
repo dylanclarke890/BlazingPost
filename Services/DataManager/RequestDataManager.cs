@@ -1,6 +1,7 @@
 ﻿using BlazingPostMan.Data.Models;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace BlazingPostMan.Services.DataManager
 {
@@ -13,25 +14,14 @@ namespace BlazingPostMan.Services.DataManager
 
         private List<Request> PastRequests { get; set; }
 
-        private Request CurrentRequest;
-
-        public Request GetRequest()
+        public Request GetLastRequest()
         {
-            return CurrentRequest ??= new();
+            return PastRequests.Any() ? PastRequests.Last() : new();
         }
 
-        public void SaveRequest(bool clearRequestAfter = false)
+        public void SaveRequest(Request request)
         {
-            PastRequests.Add(CurrentRequest);
-            if (clearRequestAfter)
-            {
-                ClearCurrentRequest();
-            }
-        }
-
-        public void ClearCurrentRequest()
-        {
-            CurrentRequest = null;
+            PastRequests.Add(request.Clone());
         }
 
         public void PrintPastRequests()

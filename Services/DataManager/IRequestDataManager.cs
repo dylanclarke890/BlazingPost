@@ -4,8 +4,8 @@ namespace BlazingPostMan.Services.DataManager
 {
     public interface IRequestDataManager
     {
-        Request GetRequest();
-        void SaveRequest(bool clearRequestAfter = false);
+        Request GetLastRequest();
+        void SaveRequest(Request request);
         void PrintPastRequests();
     }
 }
